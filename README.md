@@ -1,8 +1,9 @@
 
 
+
 <div align="center">
 
-<a href="https://v2.nonebot.dev/store"><img src="https://i3.meishichina.com/atta/recipe/2023/01/06/20230106167298595549937310737312.JPG?x-oss-process=style/p800" width="180" height="180" alt="NoneBotPluginLogo"></a>
+<a href="https://v2.nonebot.dev/store"><img src="https://upload-bbs.mihoyo.com/upload/2021/08/12/7520b99bda57316e324e679fab4f2aa8_6724316923814914690.jpg?x-oss-process=image/resize,s_150/quality,q_80/auto-orient,0/interlace,1/format,jpg" width="180" height="180" alt="NoneBotPluginLogo"></a>
 
 </div>
 
