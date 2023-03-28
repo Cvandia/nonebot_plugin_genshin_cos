@@ -7,7 +7,9 @@ send_cos = on_command("原神cos",aliases={"米游社cos"},block=False,priority=
 @send_cos.handle()
 async def handle():
     img = get_cos().randow_cos_img()
+    if not img:
+        await send_cos.finish("未获取到图片")
     try:
         await send_cos.send(MessageSegment.image(img))
     except ActionFailed:
-        await send_cos.finish("图片失效了",at_sender = True)
+        await send_cos.finish("账户风控了,发送不了图片",at_sender = True)
