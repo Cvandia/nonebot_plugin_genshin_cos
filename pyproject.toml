@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-plugin-genshin-cos"
-version = "0.1.1"
+version = "0.1.2"
 description = "米游社原神cos图获取"
 authors = ["divandia <106718176+Cvandia@users.noreply.github.com>"]
 license = "MIT"
@@ -17,6 +17,7 @@ aiofiles = ">=0.7.0"
 pydantic = ">=1.10.2"
 pathlib = ">=1.0.1"
 ujson = ">=5.5.0"
+requests = ">=2.28.1"
 
 
 [build-system]
