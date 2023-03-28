@@ -96,4 +96,4 @@ nb plugin install nonebot-plugin-genshin-cos --upgrade
 ## 免责声明
 
 图片版权归米游社原神cos社区所属，请尊重
-coser作者的创作权
+coser的创作权
