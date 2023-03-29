@@ -3,7 +3,7 @@
 
 <div align="center">
 
-<a href="https://v2.nonebot.dev/store"><img src="https://upload-bbs.mihoyo.com/upload/2021/08/12/7520b99bda57316e324e679fab4f2aa8_6724316923814914690.jpg?x-oss-process=image/resize,s_150/quality,q_80/auto-orient,0/interlace,1/format,jpg" width="180" height="180" alt="NoneBotPluginLogo"></a>
+<a href="https://v2.nonebot.dev/store"><img src="https://github.com/Cvandia/nonebot_plugin_genshin_cos/blob/main/res/ico.png" width="180" height="180" alt="NoneBotPluginLogo"></a>
 
 </div>
 
