@@ -1,4 +1,5 @@
 import requests
+from nonebot.log import logger
 from pathlib import Path
 try:
     import ujson as json
@@ -39,20 +40,31 @@ class get_cos(object):
         return img_list
     
     
-    def save_img(self,save_path:Path):
-        """保存cos的图片\nsave_path: 保存的路劲"""
+    def save_img(self,save_path:str):
+        """保存cos的图片
+        save_path: 保存的路劲
+        
+        返回：
+        int:成功保存的数量
+        """
         data = self.parse()
-        if not save_path:
-            save_path = Path("data/genshin_cos")
-            #如果目录不存在就创建该目录
-            save_path.parent.mkdir(parents=True, exist_ok=True)
-        for k,v in data:
+        path = Path(save_path)
+        if not str(save_path):
+            path = Path("./data/genshin_cos")
+        N = 0
+        for k,v in data.items():
+            N += 1
             try:
-                with open(f"{save_path}/{k}.png", 'wb') as f:
+                if not path.exists():
+                    path.mkdir(parents=True)
+                    logger.warning(f"文件夹不存在，正在创建文件夹:{path}")
+                with open(path / f"{k}.jpg", 'wb') as f:
                     img = requests.get(v, headers=self.headers).content  # 发送请求获取图片内容
                     f.write(img)
-            except OSError:
-                raise WriteError("读写出错了")
+                    logger.success(f"保存成功 --> {k}")
+            except Exception as exc:
+                raise WriteError(f"出错了请查看详细报错:\n{exc}")
+        return N
     
     def randow_cos_img(self) ->str:
         """随机cos图链接"""

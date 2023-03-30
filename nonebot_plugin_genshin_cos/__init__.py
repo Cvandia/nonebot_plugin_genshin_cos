@@ -1,11 +1,14 @@
 from nonebot.adapters.onebot.v11 import MessageSegment,MessageEvent,Bot,Message,GroupMessageEvent
 from nonebot.plugin import on_regex,PluginMetadata
+from nonebot.permission import SUPERUSER
 from nonebot.exception import ActionFailed
 from nonebot.typing import T_State
 from nonebot import get_driver
 from .utils import get_cos,WriteError
 from .config import Config
 import re
+from pathlib import Path
+import requests
 
 __plugin_meta__ = PluginMetadata(
     name = "米游社cos",
@@ -20,9 +23,27 @@ __plugin_meta__ = PluginMetadata(
     },
 )
 
+max = Config.parse_obj(get_driver().config.dict()).cos_max
+save_path = Config.parse_obj(get_driver().config.dict()).cos_path
 
 send_cos = on_regex(r"^[原神|米游社]cos(\s)?([x|*|X]\d)?",block=False,priority=5)
-download_cos = on_regex(r"下载cos")
+download_cos = on_regex(r"^[下载cos]|[cos保存]$",block=False,permission=SUPERUSER)
+@download_cos.handle()
+async def down_load():
+    try:
+        dwn = get_cos()
+        if not save_path: 
+            await download_cos.send("正在获取数据，未设置指定路径，默认下载到data/genshin_cos")
+        else:
+            await download_cos.send("正在下载cos图片至指定文件夹,请稍等……")
+        num = dwn.save_img(save_path)
+        await download_cos.finish(f"保存完毕，一共保存了{num}张图片")
+    except WriteError as exc:
+        await download_cos.finish(f"<{exc}>")
+        
+    
+
+
 
 max = Config.parse_obj(get_driver().config.dict()).cos_max
 
