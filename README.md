@@ -90,7 +90,7 @@ nb plugin install nonebot-plugin-genshin-cos --upgrade
  - [x] 缓慢更新，最近学业繁忙哦~
  - [x] 随机发送cos图片
  - [x] 保存cos图
- - [ ] 内置cd和用户触发上限
+ - [x] 内置cd和用户触发上限
  - [ ] 合并转发发送多张cos图
  - [ ] 选择发送图库方式：离线 (迅速) or 在线（缓慢、目前是的）
 
