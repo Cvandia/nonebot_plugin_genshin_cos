@@ -1,11 +1,17 @@
 import requests
 from nonebot.log import logger
 from pathlib import Path
+from typing import Tuple
+from nonebot import get_driver
+from .config import Config
+from datetime import datetime,timedelta
 try:
     import ujson as json
 except ImportError:
     import json
 import random
+
+cd = Config.parse_obj(get_driver().config.dict()).cos_cd
     
 class WriteError(Exception):
     pass
@@ -69,3 +75,24 @@ class get_cos(object):
     def randow_cos_img(self) ->str:
         """随机cos图链接"""
         return random.choice(self.get_img_url())
+    
+    
+def check_cd(user_id:int, user_data:dict) ->Tuple[bool,int,dict]:
+    """检查用户触发事件的cd
+
+    Args:
+        user_id (int): 用户的id
+        user_data (dict): 用户数据
+
+    Returns:
+        Tuple[bool,int,dict]: 返回元素（是否超出cd，剩余cd，更新后的用户数据）
+    """
+    data = user_data
+    if str(user_id) not in data:
+        data[str(user_id)] = datetime.now() + timedelta(seconds=cd)
+    if datetime.now() < data[f'{user_id}']:
+        delta = (data[str(user_id)] - datetime.now()).seconds
+        return False,delta,data
+    else:
+        data[str(user_id)] = datetime.now() + timedelta(seconds=cd)
+        return True, 0, data

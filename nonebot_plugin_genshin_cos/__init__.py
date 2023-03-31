@@ -4,8 +4,10 @@ from nonebot.permission import SUPERUSER
 from nonebot.exception import ActionFailed
 from nonebot.typing import T_State
 from nonebot import get_driver
-from .utils import get_cos,WriteError
+from .utils import get_cos,WriteError,check_cd
 from .config import Config
+from nonebot.log import logger
+from re import I
 import re
 from pathlib import Path
 import requests
@@ -25,9 +27,10 @@ __plugin_meta__ = PluginMetadata(
 
 max = Config.parse_obj(get_driver().config.dict()).cos_max
 save_path = Config.parse_obj(get_driver().config.dict()).cos_path
+user_data = {}
 
-send_cos = on_regex(r"^[原神|米游社]cos(\s)?([x|*|X]\d)?",block=False,priority=5)
-download_cos = on_regex(r"^[下载cos]|[cos保存]$",block=False,permission=SUPERUSER)
+send_cos = on_regex(r"^(原神|米游社)+cos(\s)?([x|*|X]\d)?",block=False,priority=5,flags=I)
+download_cos = on_regex(r"^(下载cos)|(cos保存)$",block=False,permission=SUPERUSER,flags=I)
 @download_cos.handle()
 async def down_load():
     try:
@@ -49,24 +52,29 @@ max = Config.parse_obj(get_driver().config.dict()).cos_max
 
 @send_cos.handle()
 async def handle(bot:Bot, event:MessageEvent, state:T_State):
+    global user_data
     args = list(state['_matched_groups'])
     img = get_cos()
-    if not args[1]:
-        await send_cos.send("获取图片中…请稍等")
-        if not img.randow_cos_img():
-            await send_cos.finish("未获取到图片")
-        try:
-            await send_cos.send(MessageSegment.image(img.randow_cos_img()))
-        except ActionFailed:
-            await send_cos.finish("账户风控了,发送不了图片",at_sender = True)
+    out_cd,deletime,user_data = check_cd(event.user_id,user_data)
+    if out_cd:
+        if not args[2]:
+            await send_cos.send("获取图片中…请稍等")
+            if not img.randow_cos_img():
+                await send_cos.finish("未获取到图片")
+            try:
+                await send_cos.send(MessageSegment.image(img.randow_cos_img()))
+            except ActionFailed:
+                await send_cos.finish("账户风控了,发送不了图片",at_sender = True)
+        else:
+            num = int(re.sub(r"[x|*|X]","",args[2]))
+            num = num if num <= max else max
+            msg_list = ['找到最新的一些cos图如下:']
+            imgs = img.get_img_url()
+            for i in range(0,num):
+                msg_list.append(MessageSegment.image(imgs[i])) 
+            await send_forward_msg(bot,event,"米游社cos",bot.self_id,msg_list)
     else:
-        num = int(re.sub(r"[x|*|X]","",args[1]))
-        num = num if num <= max else max
-        msg_list = ['找到最新的一些cos图如下:']
-        imgs = img.get_img_url()
-        for i in range(0,num+1):
-            msg_list.append(MessageSegment.image(imgs[i])) 
-        await send_forward_msg(bot,event,"米游社cos",bot.self_id,msg_list)
+        await send_cos.finish(f"cd冷却中，还剩{deletime}秒",at_sender = True)
 
 
 
