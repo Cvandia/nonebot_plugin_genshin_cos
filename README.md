@@ -70,6 +70,7 @@ nb plugin install nonebot-plugin-genshin-cos --upgrade
 |:-----:|:----:|:----:|:---:|
 |cos_max|int|5|最大返回cos图片数量|
 |cos_path|str|无|不配置则默认下载到bot根目录的```"data/genshin_cos"```,支持绝对路劲如```"C:/Users/image"```和相对bot根目录路劲如```"coser/image"```
+|cos_cd|int|10|用户触发cd|
 
 > 注意：绝对路劲中用`/`，用`\`可能会被转义
 
