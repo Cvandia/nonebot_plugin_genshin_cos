@@ -10,6 +10,7 @@ try:
 except ImportError:
     import json
 import random
+import re
 
 cd = Config.parse_obj(get_driver().config.dict()).cos_cd
     
@@ -45,6 +46,18 @@ class get_cos(object):
             img_list.append(v)
         return img_list
     
+    def get_img_name(self) ->list:
+        """获取cos图片名称
+
+        Returns:
+            list: 图片名称列表
+        """
+        data = self.parse()
+        name_list = []
+        for k,v in data.items():
+            name_list.append(k)
+        return name_list
+    
     
     def save_img(self,save_path:str):
         """保存cos的图片
@@ -57,18 +70,20 @@ class get_cos(object):
         path = Path(save_path)
         if not str(save_path):
             path = Path("./data/genshin_cos")
+        if not path.exists():
+            path.mkdir(parents=True)
+            logger.warning(f"文件夹不存在，正在创建文件夹:{path}")
         N = 0
         for k,v in data.items():
             N += 1
+            k = re.sub(r'[^\w]', '',k)
             try:
-                if not path.exists():
-                    path.mkdir(parents=True)
-                    logger.warning(f"文件夹不存在，正在创建文件夹:{path}")
                 with open(path / f"{k}.jpg", 'wb') as f:
                     img = requests.get(v, headers=self.headers).content  # 发送请求获取图片内容
                     f.write(img)
                     logger.success(f"保存成功 --> {k}")
             except Exception as exc:
+                logger.error(exc)
                 raise WriteError(f"出错了请查看详细报错:\n{exc}")
         return N
     
@@ -76,6 +91,35 @@ class get_cos(object):
         """随机cos图链接"""
         return random.choice(self.get_img_url())
     
+    def download_urls(self,urls:list,names:list,save_path:str) ->int:
+        """下载特定的图片链接
+
+        Args:
+            urls (list): 图片链接
+            names (list): 图片对应名称
+            save_path (str): 保存的路劲
+            
+        retrun:
+            int: 返回成功保存的数量
+        """
+        path = Path(save_path)
+        if not str(save_path):
+            path = Path("./data/genshin_cos")
+        if not path.exists():
+            path.mkdir(parents=True)
+            logger.warning(f"文件夹不存在，正在创建文件夹:{path}")
+        N = 0
+        for url,name in zip(urls,names):
+            N += 1
+            name = re.sub(r'[^\w]', '',name)
+            try:
+                with open(path / f"{name}.jpg", 'wb') as f:
+                    img = requests.get(url, headers=self.headers).content
+                    f.write(img)
+                    logger.success(f"保存成功 --> {name}")
+            except Exception as exc:
+                raise WriteError(exc)
+        return N
     
 def check_cd(user_id:int, user_data:dict) ->Tuple[bool,int,dict]:
     """检查用户触发事件的cd
@@ -85,7 +129,7 @@ def check_cd(user_id:int, user_data:dict) ->Tuple[bool,int,dict]:
         user_data (dict): 用户数据
 
     Returns:
-        Tuple[bool,int,dict]: 返回元素（是否超出cd，剩余cd，更新后的用户数据）
+        Tuple[bool,int,dict]: 返回元组（是否超出cd，剩余cd，更新后的用户数据）
     """
     data = user_data
     if str(user_id) not in data:
@@ -96,3 +140,4 @@ def check_cd(user_id:int, user_data:dict) ->Tuple[bool,int,dict]:
     else:
         data[str(user_id)] = datetime.now() + timedelta(seconds=cd)
         return True, 0, data
+
