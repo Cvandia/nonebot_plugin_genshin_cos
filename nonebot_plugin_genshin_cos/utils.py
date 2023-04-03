@@ -63,8 +63,8 @@ class get_cos(object):
         """保存cos的图片
         save_path: 保存的路劲
         
-        返回：
-        int:成功保存的数量
+        Returns:
+            int:成功保存的数量
         """
         data = self.parse()
         path = Path(save_path)
@@ -76,7 +76,7 @@ class get_cos(object):
         N = 0
         for k,v in data.items():
             N += 1
-            k = re.sub(r'[^\w]', '',k)
+            k = re.sub(r'^[\w-+.?？|=*]*', '',k)
             try:
                 with open(path / f"{k}.jpg", 'wb') as f:
                     img = requests.get(v, headers=self.headers).content  # 发送请求获取图片内容
@@ -111,7 +111,7 @@ class get_cos(object):
         N = 0
         for url,name in zip(urls,names):
             N += 1
-            name = re.sub(r'[^\w]', '',name)
+            name = re.sub(r'^[\w-+.?？|=*]*', '',name)
             try:
                 with open(path / f"{name}.jpg", 'wb') as f:
                     img = requests.get(url, headers=self.headers).content
