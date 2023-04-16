@@ -21,16 +21,29 @@ __plugin_meta__ = PluginMetadata(
         "unique_name": "genshin_cos",
         "example": "保存cos:保存cos图片至本地文件",
         "author": "divandia <106718176+Cvandia@users.noreply.github.com>",
-        "version": "0.1.3",
+        "version": "0.1.5",
     },
 )
 
 max = Config.parse_obj(get_driver().config.dict()).cos_max
 save_path = Config.parse_obj(get_driver().config.dict()).cos_path
+send_path = Path(Config.parse_obj(get_driver().config.dict()).cos_path)
 user_data = {}
+send_mode = 0
 
 send_cos = on_regex(r"^(原神|米游社)+cos(\s)?([x|*|X]\d)?",block=False,priority=5,flags=I)
 download_cos = on_regex(r"^(下载cos)|(cos保存)$",block=False,permission=SUPERUSER,flags=I)
+switch_cos = on_regex(r"^切换(cos)?图库",block=False,priority=5,flags=I)
+
+@switch_cos.handle()
+async def switch(bot:Bot,event:GroupMessageEvent):
+    global send_mode
+    if send_mode == 0:
+        send_mode = 1
+        await switch_cos.finish("已切换到在线图库",at_sender=True)
+    else:
+        send_mode = 0
+        await switch_cos.finish("已切换到离线图库",at_sender=True)
 
 
 @download_cos.handle()
@@ -46,7 +59,7 @@ async def choose(state:T_State,bot:Bot,event:MessageEvent):
         await send_forward_msg(bot,event,"米游社cos",bot.self_id,choose_msg)
     except ActionFailed:
         await download_cos.finish("合并转发失败，请重试，如果多次失败，可能是账户风控了")
-  
+
 @download_cos.got("num",prompt="请发送你不需要的链接序号\n发送“无”为全部下载,多个序号用空格隔开")
 async def down(state:T_State,num:Message = Arg()):
     got_msg = str(num)
@@ -77,9 +90,6 @@ async def down(state:T_State,num:Message = Arg()):
             await download_cos.finish(f"成功保存{num}张图片")
         except WriteError as exc:
             await download_cos.finish(f"出错了:<{exc}>")
-    
-        
-    
 
 
 
@@ -87,13 +97,16 @@ max = Config.parse_obj(get_driver().config.dict()).cos_max
 
 @send_cos.handle()
 async def handle(bot:Bot, event:MessageEvent, state:T_State):
-    global user_data
+    global user_data,send_mode
+    if send_mode == 0:
+        await send_cos.send("当前模式为离线图库,正在寻找图片中")
+    else:
+        await send_cos.send("当前模式为在线图库,正在寻找图片中")
     args = list(state['_matched_groups'])
     img = get_cos()
     out_cd,deletime,user_data = check_cd(event.user_id,user_data)
     if out_cd:
         if not args[2]:
-            await send_cos.send("获取图片中…请稍等")
             if not img.randow_cos_img():
                 await send_cos.finish("未获取到图片")
             try:

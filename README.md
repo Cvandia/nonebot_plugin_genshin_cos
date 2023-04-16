@@ -1,9 +1,7 @@
 
-
-
 <div align="center">
 
-<a href="https://v2.nonebot.dev/store"><img src="https://github.com/Cvandia/nonebot_plugin_genshin_cos/blob/main/res/ico.png" width="180" height="180" alt="NoneBotPluginLogo"></a>
+<a href="https://v2.nonebot.dev/store"><img src="https://ghproxy.com/https://github.com/Cvandia/nonebot_plugin_genshin_cos/blob/main/res/ico.png" width="180" height="180" alt="NoneBotPluginLogo"></a>
 
 </div>
 
@@ -102,6 +100,8 @@ nb plugin install nonebot-plugin-genshin-cos --upgrade
 图片版权归米游社原神cos社区所属，请尊重
 coser的创作权
 
+
+
 ## 💝 鸣谢
 
-- [Nonebot](https://github.com/nonebot/nonebot2): 本项目的基础，非常好用的聊天机器人框架。
+- [x] [Nonebot](https://github.com/nonebot/nonebot2): 本项目的基础，非常好用的聊天机器人框架。
