@@ -40,12 +40,21 @@ pip 安装
 ```
 pip install nonebot-plugin-genshin-cos
 ```
+- 在nonebot的pyproject.toml中的plugins = ["xxx"]添加此插件
 
 nb-cli安装
 
 ```
 nb plugin install nonebot-plugin-genshin-cos --upgrade
 ```
+
+git clone安装(不推荐)
+
+- 运行
+```git clone https://github.com/Cvandia/nonebot_plugin_genshin_cos```
+- 在运行处
+把文件夹`nonebot-plugin-genshen-cos`复制到bot根目录下的`src/plugins`(或者你创建bot时的其他名称`xxx/plugins`)
+
  
  </details>
  
@@ -58,6 +67,8 @@ nb plugin install nonebot-plugin-genshin-cos --upgrade
  
  阿里源```https://mirrors.aliyun.com/pypi/simple/```
  
+ _使用方法在安装命令后加` -i https://pypi.tuna.tsinghua.edu.cn/simple`_
+ _如`pip install xxx -i https://pypi.tuna.tsinghua.edu.cn/simple`_
 </details>
 
 
