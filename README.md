@@ -57,7 +57,11 @@ nb plugin install nonebot-plugin-genshin-cos --upgrade
  清华源```https://pypi.tuna.tsinghua.edu.cn/simple```
  
  阿里源```https://mirrors.aliyun.com/pypi/simple/```
- 
+
+
+ 安装完后记得执行一下：
+ ```playwright install```
+~~懒，没写自动下载chrome~~ 
 </details>
 
 
@@ -67,8 +71,10 @@ nb plugin install nonebot-plugin-genshin-cos --upgrade
 | 配置 | 类型 | 默认值 | 说明 |
 |:-----:|:----:|:----:|:---:|
 |cos_max|int|5|最大返回cos图片数量|
-|cos_path|str|无|不配置则默认下载到bot根目录的```"data/genshin_cos"```,支持绝对路劲如```"C:/Users/image"```和相对bot根目录路劲如```"coser/image"```
-|cos_cd|int|10|用户触发cd|
+|cos_path|str|无|不配置则默认下载到bot根目录的`"data/genshin_cos"`,支持绝对路劲如`"C:/Users/image"`和相对bot根目录路劲如`"coser/image"`
+|cos_cd|int|30|用户触发cd|
+|cos_time_out|int|60|cosplus用户超时时间|
+|cos_swipe_time|int|1|获取页面的时间，时间越长图片越多|
 
 > 注意：绝对路劲中用`/`，用`\`可能会被转义
 
@@ -77,12 +83,13 @@ nb plugin install nonebot-plugin-genshin-cos --upgrade
 ### 指令：
 | 指令 | 需要@ | 范围 | 说明 |权限|
 |:-----:|:----:|:----:|:----:|:----:|
-|原神cos|否|私聊、群聊|随机发送x张cos图，如：/米游社cos x3|任何|
-|下载cos|否|私聊、群聊|爬取cos图片至本地,如：/下载cos|超管|
-
+|原神cos|否|私聊、群聊|随机发送x张cos图，如：米游社cos x3|任何|
+|下载cos|否|私聊、群聊|爬取cos图片至本地,如：下载cos|超管|
+|cosplus|否|私聊、群聊|通过playwright获取cos图|任何|
+|xmx|否|私聊、群聊|？？？？？s|超管|
 **注意**
 
-默认情况下, 您应该在指令前加上命令前缀, 通常是 /
+指令触发方式是正则匹配的，不需要加指令前缀
 
 ## 🌙 未来
  - [x] 缓慢更新，最近学业繁忙哦~
@@ -90,6 +97,7 @@ nb plugin install nonebot-plugin-genshin-cos --upgrade
  - [x] 保存cos图
  - [x] 内置cd和用户触发上限
  - [x] 合并转发发送多张cos图
+ - [x] playwright获取cos图
  - [ ] 选择发送图库方式：离线 (迅速) or 在线（缓慢、目前是的）
 
 
