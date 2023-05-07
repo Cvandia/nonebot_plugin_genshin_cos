@@ -21,7 +21,7 @@ __plugin_meta__ = PluginMetadata(
         "unique_name": "genshin_cos",
         "example": "保存cos:保存cos图片至本地文件",
         "author": "divandia <106718176+Cvandia@users.noreply.github.com>",
-        "version": "0.1.6",
+        "version": "0.1.7",
     },
 )
 logo = """<g>
@@ -161,10 +161,10 @@ async def handle(bot: Bot, event: MessageEvent, state: T_State):
     if out_cd:
         if not args[2]:
             await send_cos.send("获取图片中…请稍等")
-            if not img.randow_cos_img():
+            if not await img.randow_cos_img():
                 await send_cos.finish("未获取到图片")
             try:
-                await send_cos.send(MessageSegment.image(img.randow_cos_img()))
+                await send_cos.send(MessageSegment.image(await img.randow_cos_img()))
             except ActionFailed:
                 await send_cos.finish("账户风控了,发送不了图片", at_sender=True)
         else:

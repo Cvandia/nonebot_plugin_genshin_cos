@@ -1,25 +1,32 @@
-from httpx import AsyncClient
-from nonebot.log import logger
-from pathlib import Path
-from nonebot import get_driver
-from PIL import Image, ImageDraw, ImageFont
-from typing import List, Tuple
-from .config import Config
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import List, Tuple
+
+from httpx import AsyncClient
+from nonebot import get_driver
+from nonebot.log import logger
 from nonebot.log import logger as blog
+from PIL import Image, ImageDraw, ImageFont
+
+from .config import Config
+
 try:
     import ujson as json
 except ImportError:
     import json
-import random
-from playwright.async_api import async_playwright
+
 import io
 import os
-import time
+import random
 import re
+import time
+
+from playwright.async_api import async_playwright
 
 cd = Config.parse_obj(get_driver().config.dict()).cos_cd
-font_path = os.path.join(os.path.dirname(__file__), "fonts")+ "/CONSOLA.TTF"
+font_path = os.path.join(os.path.dirname(__file__), "fonts") + "/CONSOLA.TTF"
+
+
 class WriteError(Exception):
     pass
 
@@ -68,7 +75,7 @@ class get_cos(object):
         Returns:
             list: 图片名称列表
         """
-        data = self.parse()
+        data = await self.parse()
         name_list = []
         for k, v in data.items():
             name_list.append(k)
@@ -83,7 +90,7 @@ class get_cos(object):
         Returns:
             int: 成功保存的数量
         """
-        data = self.parse()
+        data = await self.parse()
         path = Path(save_path)
         if not str(save_path):
             path = Path("./data/genshin_cos")
@@ -93,7 +100,7 @@ class get_cos(object):
         N = 0
         for k, v in data.items():
             N += 1
-            k = re.sub(r'^[\w-+.?？|=*]*', '', k)
+            k = re.sub(r"^[\-\+.?？|=*]*", "", k)
             try:
                 with open(path / f"{k}.jpg", 'wb') as f:
                     img = await AsyncClient().get(
@@ -105,13 +112,13 @@ class get_cos(object):
                 raise WriteError(f"出错了请查看详细报错:\n{exc}")
         return N
 
-    def randow_cos_img(self) -> str:
+    async def randow_cos_img(self) -> str:
         """随机cos图链接
 
         Returns:
             str: 图片url
         """
-        return random.choice(self.get_img_url())
+        return random.choice(await self.get_img_url())
 
     async def download_urls(self, urls: list, names: list, save_path: str) -> int:
         """下载特定的图片链接
@@ -125,7 +132,7 @@ class get_cos(object):
             int: 返回成功保存的数量
         """
         path = Path(save_path)
-        if not str(save_path):
+        if not save_path:
             path = Path("./data/genshin_cos")
         if not path.exists():
             path.mkdir(parents=True)
@@ -133,7 +140,7 @@ class get_cos(object):
         N = 0
         for url, name in zip(urls, names):
             N += 1
-            name = re.sub(r'^[\w-+.?？|=*]*', '', name)
+            name = re.sub(r"^[\-\+.?？|=*]*", "", name)
             try:
                 with open(path / f"{name}.jpg", 'wb') as f:
                     img = await AsyncClient().get(url, headers=self.headers)
@@ -199,7 +206,7 @@ class GetGenShinCos():
                 await self.page.mouse.wheel(delta_y=20, delta_x=0)
                 time.sleep(0.01)
             await self.page.wait_for_timeout(2000)
-            guid_image = await self.page.locator('div.mhy-article-list__body').screenshot(quality=50,type='jpeg')
+            guid_image = await self.page.locator('div.mhy-article-list__body').screenshot(quality=50, type='jpeg')
             self.guid_links = await self.page.query_selector_all('.mhy-img-article-card__header a')
             image = Image.open(io.BytesIO(guid_image))
             draw = ImageDraw.Draw(image)
@@ -207,7 +214,7 @@ class GetGenShinCos():
                 x = m % 3  # 0,1,2
                 y = m // 3  # 0,1,2,3,4,5
                 draw.text((x*247, y*247), str(m), fill=(255, 0, 0),
-                        font=ImageFont.truetype(font=font_path, size=100))
+                          font=ImageFont.truetype(font=font_path, size=100))
             byes = io.BytesIO()
             image.save(byes, format="JPEG")
             return byes
@@ -215,7 +222,7 @@ class GetGenShinCos():
             await self.close()
             raise exc
 
-    async def get_img_or_video(self, location:List[int]) -> Tuple[int, list]:
+    async def get_img_or_video(self, location: List[int]) -> Tuple[int, list]:
         """
         获取图片或视频链接
 
@@ -243,10 +250,10 @@ class GetGenShinCos():
             raise exp
         # 获取图片链接
         if pic_images:
-            return 0,url_list
+            return 0, url_list
         # 如果图片不存在则获取获取视频链接
         else:
-            return 1,url_list
+            return 1, url_list
 
     async def get_all_img(self) -> list:
         """
@@ -299,15 +306,16 @@ def check_cd(user_id: int, user_data: dict) -> Tuple[bool, int, dict]:
     else:
         data[str(user_id)] = datetime.now() + timedelta(seconds=cd)
         return True, 0, data
-    
-def log(front:str,behind:str,*args, **kwargs):
+
+
+def log(front: str, behind: str, *args, **kwargs):
     """
     自定义`nonebot2`的log输出
 
     Args:
         front (str): 前面的文字
         behind (str): 后面的文字
-    
+
     Returns:
         log输出，格式为`[front] behind`
     """
