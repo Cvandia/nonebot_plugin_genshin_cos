@@ -20,8 +20,9 @@ __plugin_meta__ = PluginMetadata(
     extra = {
         "unique_name": "genshin_cos",
         "example": "保存cos:保存cos图片至本地文件",
+        "usage":"暂无",
         "author": "divandia <106718176+Cvandia@users.noreply.github.com>",
-        "version": "0.1.3",
+        "version": "0.1.5",
     },
 )
 
