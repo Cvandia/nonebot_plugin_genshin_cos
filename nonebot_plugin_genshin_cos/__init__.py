@@ -154,7 +154,7 @@ max = Config.parse_obj(get_driver().config.dict()).cos_max
 
 
 @send_cos.handle()
-async def handle(bot: Bot, event: MessageEvent, args: Tuple[Any, ...]):
+async def handle(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup()):
     global user_data
     args = list(args)
     img = get_cos()
