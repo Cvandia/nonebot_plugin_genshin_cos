@@ -1,12 +1,13 @@
 from nonebot.adapters.onebot.v11 import MessageSegment, MessageEvent, Bot, Message, GroupMessageEvent
 from nonebot.plugin import on_regex, PluginMetadata
 from nonebot.permission import SUPERUSER
-from nonebot.params import Arg
+from nonebot.params import Arg, RegexGroup
 from nonebot.exception import ActionFailed
 from nonebot.typing import T_State
 from nonebot import get_driver
 from .utils import get_cos, WriteError, check_cd, GetGenShinCos, log
 from nonebot.log import logger
+from typing import Tuple, Any
 from .config import Config
 from re import I
 import re
@@ -153,9 +154,9 @@ max = Config.parse_obj(get_driver().config.dict()).cos_max
 
 
 @send_cos.handle()
-async def handle(bot: Bot, event: MessageEvent, state: T_State):
+async def handle(bot: Bot, event: MessageEvent, args: Tuple[Any, ...]):
     global user_data
-    args = list(state['_matched_groups'])
+    args = list(args)
     img = get_cos()
     out_cd, deletime, user_data = check_cd(event.user_id, user_data)
     if out_cd:
