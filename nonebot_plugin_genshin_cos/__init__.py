@@ -17,12 +17,15 @@ __plugin_meta__ = PluginMetadata(
     name="米游社cos",
     description="获取原神coser图片",
     config=Config,
-    usage="原神cos",
+    usage="原神cos,CosPlus,下载cos",
+    type = "application",
+    homepage = "https://github.com/Cvandia/nonebot_plugin_genshin_cos",
+    supported_adapters={"~onebot.v11"},
     extra={
         "unique_name": "genshin_cos",
         "example": "保存cos:保存cos图片至本地文件",
         "author": "divandia <106718176+Cvandia@users.noreply.github.com>",
-        "version": "0.1.7",
+        "version": "0.1.9",
     },
 )
 logo = """<g>
