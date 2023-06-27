@@ -1,31 +1,49 @@
-from nonebot.adapters.onebot.v11 import MessageSegment, MessageEvent, Bot, Message, GroupMessageEvent
-from nonebot.plugin import on_regex, PluginMetadata
-from nonebot.permission import SUPERUSER
-from nonebot.params import Arg, RegexGroup
-from nonebot.exception import ActionFailed
-from nonebot.typing import T_State
-from nonebot import get_driver
-from .utils import get_cos, WriteError, check_cd, GetGenShinCos, log
+from nonebot.adapters.onebot.v11 import (
+    Bot,
+    Message,
+    MessageEvent,
+    MessageSegment,
+    GroupMessageEvent,
+    GROUP_ADMIN,
+    GROUP_OWNER
+)
+from nonebot.plugin import on_regex, on_command, require, PluginMetadata
+from nonebot.params import RegexGroup, ArgPlainText, CommandArg
 from nonebot.log import logger
+from nonebot import get_driver, get_bot
+from nonebot.permission import SUPERUSER
+from nonebot.matcher import Matcher
+from nonebot.exception import ActionFailed
 from typing import Tuple, Any
+from random import choice
 from .config import Config
-from re import I
+from .utils import *
+from .hoyospider import *
+try:
+    scheduler = require("nonebot_plugin_apscheduler").scheduler
+except:
+    scheduler = None
+try:
+    import ujson as json
+except ModuleNotFoundError:
+    import json
+from nonebot_plugin_apscheduler import scheduler
+import asyncio
 import re
-from datetime import datetime, timedelta
 
 __plugin_meta__ = PluginMetadata(
     name="米游社cos",
     description="获取原神coser图片",
     config=Config,
     usage="原神cos,CosPlus,下载cos",
-    type = "application",
-    homepage = "https://github.com/Cvandia/nonebot_plugin_genshin_cos",
+    type="application",
+    homepage="https://github.com/Cvandia/nonebot_plugin_genshin_cos",
     supported_adapters={"~onebot.v11"},
     extra={
         "unique_name": "genshin_cos",
         "example": "保存cos:保存cos图片至本地文件",
         "author": "divandia <106718176+Cvandia@users.noreply.github.com>",
-        "version": "0.1.9",
+        "version": "0.2.0",
     },
 )
 logo = """<g>
@@ -38,177 +56,234 @@ logo = """<g>
 |  $$$$$$/|  $$$$$$$| $$  | $$ /$$$$$$$/| $$  | $$| $$| $$  | $$      |  $$$$$$/|  $$$$$$/ /$$$$$$$/
  \______/  \_______/|__/  |__/|_______/ |__/  |__/|__/|__/  |__/       \______/  \______/ |_______/ 
  </g>"""
+
+
 logger.opt(colors=True).info(logo)
-max = Config.parse_obj(get_driver().config.dict()).cos_max
-save_path = Config.parse_obj(get_driver().config.dict()).cos_path
-timeout = Config.parse_obj(get_driver().config.dict()).cos_time_out
-swipeTime = Config.parse_obj(get_driver().config.dict()).cos_swipe_time
+
+#用户cd数据
 user_data = {}
 
-send_cos = on_regex(
-    r"^(原神|米游社)+cos(\s)?([x|*|X]\d)?", block=False, priority=5, flags=I)
-download_cos = on_regex(r"^(下载cos)|(cos保存)$", block=False,
-                        permission=SUPERUSER, flags=I)
-CosPlus = on_regex(r"^cosplus$", block=True, priority=5, flags=I)
-cosall = on_regex(r"^xmx$", block=True, priority=5,flags=I, permission=SUPERUSER)
+#加载定时任务数据
+config_path = Path("config/genshincos.json")
+config_path.parent.mkdir(parents=True, exist_ok=True)
+if config_path.exists():
+    with open(config_path, "r", encoding="utf8") as f:
+        CONFIG: Dict[str, Dict[str,str]] = json.load(f)
+else:
+    CONFIG: Dict[str, Dict[str,str]] = {"": {"":""}}
+    with open(config_path, "w", encoding="utf8") as f:
+        json.dump(CONFIG, f, ensure_ascii=False, indent=4)
 
+#事件响应器
+download_cos = on_command('下载cos', aliases={'cos保存', '保存cos'}, block=False, priority=5, permission=SUPER_PERMISSION)
+hot_cos = on_command('热门cos', aliases={'热门coser', '热门cos图'}, block=False, priority=5)
+rank_cos = on_regex(r'^(日|月|周)榜cos[r]?[图]?(.+)?',priority=5, block=False, flags=re.I)
+latest_cos = on_command('最新cos', aliases={'最新coser', '最新cos图'}, block=False, priority=5)
+good_cos = on_command('精品cos', aliases={'精品coser', '精品cos图'}, block=False, priority=5)
+turn_aps = on_regex(r'^(开启|关闭)每日推送(原神|崩坏3|崩坏2|大别野)(\s)?(.+)?', block=False, priority=5, flags=re.I, permission=SUPER_PERMISSION)
 
-@cosall.handle()
-async def cosa(state: T_State, bot: Bot, event: MessageEvent):
-    cos = GetGenShinCos()
-    state["cosa"] = cos
-    await cos.start()
-    imge = await cos.get_page(seconds=swipeTime)
-    await cosall.send(MessageSegment.image(imge))
-    img_list = await cos.get_all_img()
-    await cosall.send(f"共获取到{len(img_list)}张图片")
-    await cos.close()
-    await send_forward_msg(bot, event, "cos", bot.self_id, msgs=[MessageSegment.image(img) for img in img_list])
-
-
-@CosPlus.handle()
-async def cosplus(state: T_State, bot: Bot, event: MessageEvent):
-    global user_data
-    out_cd, deletime, user_data = check_cd(event.user_id, user_data)
-    if out_cd:
-        cos = GetGenShinCos()
-        state["cosPLU"] = cos
-        await cos.start()
-        image = await cos.get_page(seconds=swipeTime)
-        try:
-            await CosPlus.send(MessageSegment.image(image))
-        except Exception:
-            await cos.close()
-            await CosPlus.finish("获取图片失败")
-        state['start_time'] = datetime.now()
-    else:
-        await CosPlus.finish(f"你的cd时间还剩{deletime}秒")
-
-
-@CosPlus.got("ablocation", prompt='请发送你要获取图片的位置，如“1 3 5”,中间用空格隔开')
-async def handle(state: T_State, bot: Bot, event: MessageEvent, ablocation: Message = Arg()):
-    cos = state["cosPLU"]
-    if state['start_time'] + timedelta(seconds=timeout) < datetime.now():
-        await cos.close()
-        await CosPlus.finish("超时，不理你了(╯▔皿▔)╯")
-    if not re.findall(r"\d", ablocation.extract_plain_text()):
-        await CosPlus.finish("请发送正确的数字,不理你了(╯▔皿▔)╯")
-    location = re.findall(r"\d+", ablocation.extract_plain_text())
-    log('genshin_cos', f"用户选择了{location}")
-    mode, msg_list = await cos.get_img_or_video(location)
-    send_list = []
-    if mode == 0:
-        send_list = [MessageSegment.image(img) for img in msg_list]
-    if not msg_list:
-        await cos.close()
-        await CosPlus.finish("获取失败")
-    await cos.close()
-    await send_forward_msg(bot, event, "cosplus", bot.self_id, send_list)
-
-
-@download_cos.handle()
-async def choose(state: T_State, bot: Bot, event: MessageEvent):
-    choose_msg = ["点击下面的链接，预览选择你不需要的图片序号"]
-    state['imgs'] = []
-    N = 1
-    for img in await get_cos().get_img_url():
-        choose_msg.append(f"{N}.{img}")
-        state['imgs'].append(img)
-        N += 1
-    try:
-        await send_forward_msg(bot, event, "米游社cos", bot.self_id, choose_msg)
-    except ActionFailed:
-        await download_cos.finish("合并转发失败，请重试，如果多次失败，可能是账户风控了")
-
-
-@download_cos.got("num", prompt="请发送你不需要的链接序号\n发送“无”为全部下载,多个序号用空格隔开")
-async def down(state: T_State, num: Message = Arg()):
-    got_msg = str(num)
-    if got_msg == "无":
-        try:
-            dwn = get_cos()
-            if not save_path:
-                await download_cos.send("正在获取数据，未设置指定路径，默认下载到data/genshin_cos")
+@turn_aps.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGroup()):
+    if scheduler == None:
+        await turn_aps.finish("未安装apscheduler插件,无法使用此功能")
+    mode = args[0] 
+    game_type = args[1]
+    time = args[3]
+    group_id = str(event.group_id)
+    if mode == "开启":
+        for dict in CONFIG.values():
+            if group_id in dict.keys():
+                await turn_aps.finish("该群已开启,无需重复开启")
+            elif not time:
+                await turn_aps.finish("请指定推送时间")
             else:
-                await download_cos.send("正在下载cos图片至指定文件夹,请稍等……")
-            num = await dwn.save_img(save_path)
-            await download_cos.finish(f"保存完毕，一共保存了{num}张图片")
-        except WriteError as exc:
-            await download_cos.finish(f"<{exc}>")
-    elif not re.findall(r"^\d", got_msg):
-        await download_cos.finish("请发送正确的数字")
+                CONFIG[game_type] = {group_id:time}
     else:
-        num_list = re.findall(r"\d+", got_msg)
-        names = await get_cos().get_img_name()
-        for n in num_list:
-            try:
-                del state['imgs'][int(n)-1]
-                del names[int(n)-1]
-            except IndexError as exc:
-                await download_cos.finish(f"出错了:<{exc}>\n可能是链接失效或者名称无效")
+        for dict in CONFIG.values():
+            if group_id in dict.keys():
+                dict.pop(group_id)
+            else:
+                await turn_aps.finish("该群尚未开启,无需关闭")
+    with open(config_path, "w", encoding="utf8") as f:
+        await f.write(json.dumps(CONFIG, ensure_ascii=False, indent=4))
+    await turn_aps.finish(f"已成功{mode}{group_id}的{game_type}定时推送")
+
+
+@hot_cos.handle()
+async def _(bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()):
+    if not arg:
+        await hot_cos.finish("请指定cos类型")
+    args = arg.extract_plain_text().split()
+    if args[0] in GENSHIN_NAME:
+        send_type = Hot(ForumType.GenshinCos)
+    elif args[0] in HONKAI3RD_NAME:
+        send_type = Hot(ForumType.Honkai3rdPic)
+    elif args[0] in DBY_NAME:
+        send_type = Hot(ForumType.DBYCOS)
+    elif args[0] in STAR_RAIL:
+        send_type = Hot(ForumType.StarRailPic)
+    else:
+        await hot_cos.finish("暂不支持该类型")
+    await send_images(bot,matcher,args,event,send_type)
+
+@rank_cos.handle()
+async def _(bot: Bot, matcher: Matcher, event: MessageEvent, group: Tuple[str, ...] = RegexGroup()):
+    if not group[1]:
+        await rank_cos.finish("请指定cos类型")
+    args = group[1].split()
+    if group[0] == "日":
+        rank_type = RankType.Daily
+    elif group[0] == "周":
+        rank_type = RankType.Weekly
+    elif group[0] == "月":
+        rank_type = RankType.Monthly
+
+    if args[0] in GENSHIN_NAME:
+        send_type = Rank(ForumType.GenshinCos, rank_type)
+    elif args[0] in HONKAI3RD_NAME:
+        send_type = Rank(ForumType.Honkai3rdPic, rank_type)
+    elif args[0] in DBY_NAME:
+        send_type = Rank(ForumType.DBYCOS, rank_type)
+    elif args[0] in STAR_RAIL:
+        send_type = Rank(ForumType.StarRailPic, rank_type)
+    else:
+        await rank_cos.finish("暂不支持该类型")
+    await send_images(bot,matcher,args,event,send_type)
+
+@latest_cos.handle()
+async def _(bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()):
+    if not arg:
+        await latest_cos.finish("请指定cos类型")
+    args = arg.extract_plain_text().split()
+    if args[0] in GENSHIN_NAME:
+        send_type = Latest(ForumType.GenshinCos, LatestType.LatestComment)
+    elif args[0] in HONKAI3RD_NAME:
+        send_type = Latest(ForumType.Honkai3rdPic, LatestType.LatestComment)
+    elif args[0] in DBY_NAME:
+        send_type = Latest(ForumType.DBYCOS, LatestType.LatestComment)
+    elif args[0] in STAR_RAIL:
+        send_type = Latest(ForumType.StarRailPic, LatestType.LatestComment)
+    else:
+        await latest_cos.finish("暂不支持该类型")
+    await send_images(bot,matcher,args,event,send_type)
+
+@good_cos.handle()
+async def _(bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()):
+    if not arg:
+        await good_cos.finish("请指定cos类型")
+    args = arg.extract_plain_text().split()
+    if args[0] in GENSHIN_NAME:
+        await good_cos.finish("原神暂不支持精品cos")
+    elif args[0] in HONKAI3RD_NAME:
+        send_type = Good(ForumType.Honkai3rdPic)
+    elif args[0] in DBY_NAME:
+        send_type = Good(ForumType.DBYCOS)
+    elif args[0] in STAR_RAIL:
+        await good_cos.finish("星穹铁道暂不支持精品cos")
+    else:
+        await good_cos.finish("暂不支持该类型")
+    await send_images(bot,matcher,args,event,send_type)
+
+
+@download_cos.got('game_type', prompt='你想下载哪种类型的,有原神和大别野,崩坏3')
+async def got_type(game_type: str = ArgPlainText()):
+    if game_type in GENSHIN_NAME:
+        hot = Hot(ForumType.GenshinCos)
+    elif game_type in DBY_NAME:
+        hot = Hot(ForumType.DBYCOS)
+    elif game_type in HONKAI3RD_NAME:
+        hot = Hot(ForumType.Honkai3rdPic)
+    elif game_type in STAR_RAIL:
+        hot = Hot(ForumType.StarRailPic)
+    image_urls = await hot.async_get_urls()
+    if not image_urls:
+        await download_cos.finish(f'没有找到{game_type}的cos图片')
+    else:
+        await download_cos.send(f'正在下载{game_type}的cos图片')
         try:
-            num = await get_cos().download_urls(state['imgs'], names, save_path)
-            await download_cos.finish(f"成功保存{num}张图片")
-        except WriteError as exc:
-            await download_cos.finish(f"出错了:<{exc}>")
+            await download_from_urls(image_urls, SAVE_PATH / f'{game_type}cos')
+            await download_cos.finish(f'已成功保存{len(image_urls)}张{game_type}的cos图片')
+        except WriteError as e:
+            await download_cos.finish(f'保存{game_type}的cos图片失败,原因:{e}')
+
+###########################################################################################
+
+#定时任务
+async def aps_send():
+    bot: Bot = get_bot()
+    for game_type, dict in CONFIG.items():
+        if game_type == "":
+            continue
+        for group_id, time in dict.items():
+            try:
+                group_id = int(group_id)
+                if game_type in GENSHIN_NAME:
+                    send_type = Rank(ForumType.GenshinCos, RankType.Daily)
+                elif game_type in DBY_NAME:
+                    send_type = Rank(ForumType.DBYCOS, RankType.Daily)
+                elif game_type in HONKAI3RD_NAME:
+                    send_type = Rank(ForumType.Honkai3rdPic, RankType.Daily)
+                elif game_type in STAR_RAIL:
+                    send_type = Rank(ForumType.StarRailPic, RankType.Daily)
+                else:
+                    continue
+                image_list = await send_type.async_get_urls(page_size=5)
+                name_list = await send_type.async_get_name(page_size=5)
+                rank_text = '\n'.join([f"{i+1}.{name_list[i]}" for i in range(len(name_list))])
+                msg_list = [f"✅米游社{game_type}cos每日榜单✅"]
+                msg_list.append(rank_text)
+                msg_list.append([MessageSegment.image(img) for img in image_list])
+                msg_list = msglist2forward(msg_list)
+                await bot.call_api("send_group_forward_msg", group_id=group_id, message=msg_list)
+                await asyncio.sleep(5)
+            except Exception as e:
+                logger.error(e)
+                continue
+
+#当bot启动时,开启定时任务
+@DRIVER.on_startup
+async def start_aps():
+    for game_type, dict in CONFIG.items():
+        if game_type == "":
+            continue
+        for group_id, time in dict.items():
+            try:
+                scheduler.add_job(aps_send, "cron", hour=time.split(":")[0], minute=time.split(":")[1], args=[])
+            except Exception as e:
+                logger.error(e)
+                continue
 
 
-max = Config.parse_obj(get_driver().config.dict()).cos_max
+async def send_images(bot:Bot, matcher: Matcher, args: list, event: MessageEvent, send_type: HoyoBasicSpider):
+    '''
+    发送图片
 
-
-@send_cos.handle()
-async def handle(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup()):
+    params:
+        bot: 当前bot
+        matcher: 事件响应器
+        args: 命令参数(0:类型 1:数量)
+        event: 消息事件类型
+        send_type: 爬虫类型
+    '''
     global user_data
-    args = list(args)
-    img = get_cos()
     out_cd, deletime, user_data = check_cd(event.user_id, user_data)
     if out_cd:
-        if not args[2]:
-            await send_cos.send("获取图片中…请稍等")
-            if not await img.randow_cos_img():
-                await send_cos.finish("未获取到图片")
+        if len(args)<2:
+            await matcher.send("获取图片中…请稍等")
             try:
-                await send_cos.send(MessageSegment.image(await img.randow_cos_img()))
+                image_list = await send_type.async_get_urls()
+                await matcher.send(MessageSegment.image(choice(image_list)))
             except ActionFailed:
-                await send_cos.finish("账户风控了,发送不了图片", at_sender=True)
+                await matcher.finish("账户风控了,发送不了图片", at_sender=True)
         else:
-            num = int(re.sub(r"[x|*|X]", "", args[2]))
-            num = num if num <= max else max
-            msg_list = ['找到最新的一些cos图如下:']
-            imgs = await img.get_img_url()
-
-            for i in range(0, num):
-                msg_list.append(MessageSegment.image(imgs[i]))
+            num = int(re.sub(r"[x|*|X]", "", args[1]))
+            num = num if num <= MAX else MAX
+            msg_list = [f'✅找到最新的一些{args[0]}图如下:✅']
+            image_list = await send_type.async_get_urls()
+            if num > len(image_list):
+                await matcher.finish(f"最多只能获取{len(image_list)}张图片", at_sender=True)
+            for i in range(num):
+                msg_list.append(MessageSegment.image(image_list[i]))
             await send_forward_msg(bot, event, "米游社cos", bot.self_id, msg_list)
     else:
-        await send_cos.finish(f"cd冷却中，还剩{deletime}秒", at_sender=True)
-
-
-async def send_forward_msg(
-    bot: Bot,
-    event: MessageEvent,
-    name: str,
-    uin: str,
-    msgs: list,
-) -> dict:
-    """调用合并转发API
-
-        bot: Bot
-        event: 消息事件类型
-        name: 发送者昵称
-        uin: 发送者账号
-        msgs: 消息列表
-    """
-    def to_json(msg: Message):
-        return {"type": "node", "data": {"name": name, "uin": uin, "content": msg}}
-
-    messages = [to_json(msg) for msg in msgs]
-
-    if isinstance(event, GroupMessageEvent):
-        return await bot.call_api(
-            "send_group_forward_msg", group_id=event.group_id, messages=messages
-        )
-    else:
-        return await bot.call_api(
-            "send_private_forward_msg", user_id=event.user_id, messages=messages
-        )
+        await matcher.finish(f"cd冷却中,还剩{deletime}秒", at_sender=True)
