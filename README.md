@@ -67,10 +67,6 @@ git clone安装(不推荐)
  
  阿里源```https://mirrors.aliyun.com/pypi/simple/```
 
-
- 安装完后记得执行一下：
- ```playwright install```
-~~懒，没写自动下载chrome~~ 
 </details>
 
 
@@ -82,8 +78,6 @@ git clone安装(不推荐)
 |cos_max|int|5|最大返回cos图片数量|
 |cos_path|str|无|不配置则默认下载到bot根目录的`"data/genshin_cos"`,支持绝对路劲如`"C:/Users/image"`和相对bot根目录路劲如`"coser/image"`
 |cos_cd|int|30|用户触发cd|
-|cos_time_out|int|60|cosplus用户超时时间|
-|cos_swipe_time|int|1|获取页面的时间，时间越长图片越多|
 
 > 注意：绝对路劲中用`/`，用`\`可能会被转义
 
@@ -92,10 +86,12 @@ git clone安装(不推荐)
 ### 指令：
 | 指令 | 需要@ | 范围 | 说明 |权限|
 |:-----:|:----:|:----:|:----:|:----:|
-|原神cos|否|私聊、群聊|随机发送x张cos图，如：米游社cos x3|任何|
-|下载cos|否|私聊、群聊|爬取cos图片至本地,如：下载cos|超管|
-|cosplus|否|私聊、群聊|通过playwright获取cos图|任何|
-|xmx|否|私聊、群聊|？？？？？s|超管|
+|下载cos|否|群聊、私聊|下载热门cos图|超管、群主、管理员|
+|热门cos|否|同上|获取指定游戏热门cos图，如`热门cos 原神 x3`|全部|
+|日、周、月榜cos|否|同上|获取排行榜cos图。如`日榜cos 原神 x3`|全部|
+|最新cos|否|同上|和上面差不多，不写了，哼哼|全部|
+|精品cos|否|同上|上上面一样的道理！|全部|
+|开启每日推送xx (时间)|否|仅群聊|如`开启每日推送原神 8:30`,注意时间的格式|超管、群主、管理员|
 
 **注意**
 
@@ -107,9 +103,10 @@ git clone安装(不推荐)
  - [x] 保存cos图
  - [x] 内置cd和用户触发上限
  - [x] 合并转发发送多张cos图
- - [x] playwright获取cos图
- - [ ] 选择发送图库方式：离线 (迅速) or 在线（缓慢、目前是的）
-
+~~playwright获取cos图~~
+~~选择发送图库方式：离线 (迅速) or 在线（缓慢、目前是的）~~
+ - [x] 支持米游社其他社区cos获取
+ - [x] 支持每日推送热榜的cos图
 
 --- 喜欢记得点个star⭐---
 
@@ -120,6 +117,7 @@ coser的创作权
 
 
 
-## 💝 鸣谢
+## 💝 特别鸣谢
 
 - [x] [Nonebot](https://github.com/nonebot/nonebot2): 本项目的基础，非常好用的聊天机器人框架。
+- [x] [@qxdn](https://github.com/qxdn):感谢qxdn的[博客文章](https://qianxu.run/2021/11/12/mihoyo-bbs-crawler/),有兴趣大家也去看看咯
