@@ -175,6 +175,7 @@ class ForumType(Enum):
     DBYCOS = 47  # 大别野cos
     DBYPIC = 39  # 大别野同人图
     StarRailPic = 56  # 星穹铁道同人图
+    StarRailCos = 62 # 星穹铁道cos
     Honkai2Pic = 40  # 崩坏2同人图
     TearsOfThemisPic = 38  # 泪水同人图
 
@@ -191,6 +192,7 @@ def get_gids(forum: str) -> GameType:
         'DBYPIC': GameType.DBY,
         'StarRailPic': GameType.StarRail,
         'Honkai2Pic': GameType.Honkai2,
+        'StarRailCos': GameType.StarRail,
     }
     return forum2gids[forum]
 

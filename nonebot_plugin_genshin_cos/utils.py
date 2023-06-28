@@ -10,7 +10,6 @@ from nonebot.permission import SUPERUSER
 #######################################################
 
 # 拓展的异常类和函数
-DRIVER = get_driver()
 SUPER_PERMISSION = GROUP_ADMIN | GROUP_OWNER | SUPERUSER
 GENSHIN_NAME = ["原神",'OP','op','欧泡','⭕','🅾️','🅾️P','🅾️p','原','圆']
 HONKAI3RD_NAME = ['崩坏3', '崩崩崩', '蹦蹦蹦','崩坏三','崩三','崩崩崩三','崩坏3rd','崩坏3Rd','崩坏3RD','崩坏3rd','崩坏3RD','崩坏3Rd']
@@ -104,7 +103,7 @@ async def send_forward_msg(
         )
 
 
-def msglist2forward(bot: Bot, name: str, uin: str, msgs: list) -> list:
+def msglist2forward(name: str, uin: str, msgs: list) -> list:
     """调用合并转发群API
 
     params:
