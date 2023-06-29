@@ -355,3 +355,40 @@ class Latest(HoyoBasicSpider):
         params = self.get_params(page_size)
         return await self.async_name(params)
     
+
+#实例化对象
+
+genshin_rank_daily = Rank(ForumType.GenshinCos, RankType.Daily)
+genshin_hot = Hot(ForumType.GenshinCos)
+genshin_good = Good(ForumType.GenshinCos)
+genshin_latest_comment = Latest(ForumType.GenshinCos, LatestType.LatestComment)
+
+honkai3rd_rank_daily = Rank(ForumType.Honkai3rdPic, RankType.Daily)
+honkai3rd_hot = Hot(ForumType.Honkai3rdPic)
+honkai3rd_good = Good(ForumType.Honkai3rdPic)
+honkai3rd_latest_comment = Latest(ForumType.Honkai3rdPic, LatestType.LatestComment)
+
+dby_rank_daily = Rank(ForumType.DBYPIC, RankType.Daily)
+dby_hot = Hot(ForumType.DBYPIC)
+dby_good = Good(ForumType.DBYPIC)
+dby_latest_comment = Latest(ForumType.DBYPIC, LatestType.LatestComment)
+
+starrail_rank_daily = Rank(ForumType.StarRailPic, RankType.Daily)
+starrail_hot = Hot(ForumType.StarRailPic)
+starrail_good = Good(ForumType.StarRailPic)
+starrail_latest_comment = Latest(ForumType.StarRailPic, LatestType.LatestComment)
+
+honkai2_rank_daily = Rank(ForumType.Honkai2Pic, RankType.Daily)
+honkai2_hot = Hot(ForumType.Honkai2Pic)
+honkai2_good = Good(ForumType.Honkai2Pic)
+honkai2_latest_comment = Latest(ForumType.Honkai2Pic, LatestType.LatestComment)
+
+dbycos_rank_daily = Rank(ForumType.DBYCOS, RankType.Daily)
+dbycos_hot = Hot(ForumType.DBYCOS)
+dbycos_good = Good(ForumType.DBYCOS)
+dbycos_latest_comment = Latest(ForumType.DBYCOS, LatestType.LatestComment)
+
+starrailcos_rank_daily = Rank(ForumType.StarRailCos, RankType.Daily)
+starrailcos_hot = Hot(ForumType.StarRailCos)
+starrailcos_good = Good(ForumType.StarRailCos)
+starrailcos_latest_comment = Latest(ForumType.StarRailCos, LatestType.LatestComment)
