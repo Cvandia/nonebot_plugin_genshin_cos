@@ -78,6 +78,8 @@ git clone安装(不推荐)
 |cos_max|int|5|最大返回cos图片数量|
 |cos_path|str|无|不配置则默认下载到bot根目录的`"data/genshin_cos"`,支持绝对路劲如`"C:/Users/image"`和相对bot根目录路劲如`"coser/image"`
 |cos_cd|int|30|用户触发cd|
+|cos_forward_msg|bool|True|默认是否合并转发|
+|cos_delay|float|0.5|当上面的配置项为`False`时，发送图片的每张延迟s|
 
 > 注意：绝对路劲中用`/`，用`\`可能会被转义
 
@@ -104,8 +106,10 @@ git clone安装(不推荐)
  - [x] 保存cos图
  - [x] 内置cd和用户触发上限
  - [x] 合并转发发送多张cos图
+
 ~~playwright获取cos图~~
 ~~选择发送图库方式：离线 (迅速) or 在线（缓慢、目前是的）~~
+
  - [x] 支持米游社其他社区cos获取
  - [x] 支持每日推送热榜的cos图
 

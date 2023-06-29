@@ -7,6 +7,10 @@ from httpx import TimeoutException
 import httpx
 from nonebot.adapters.onebot.v11 import Bot, MessageEvent, GroupMessageEvent, Message, GROUP_ADMIN, GROUP_OWNER
 from nonebot.permission import SUPERUSER
+from nonebot.matcher import Matcher
+from nonebot.log import logger
+from nonebot.exception import ActionFailed
+from asyncio import sleep
 #######################################################
 
 # 拓展的异常类和函数
@@ -18,8 +22,7 @@ STAR_RAIL = ['星穹铁道','星穹','崩铁','铁道','星铁','穹p','穹铁']
 
 class WriteError(Exception):
     """写入错误"""
-    def __init__(self):
-        super().__init__('写入错误')
+    pass
 
 
 # 加载配置
@@ -27,6 +30,8 @@ class WriteError(Exception):
 MAX = Config.parse_obj(get_driver().config.dict()).cos_max
 SAVE_PATH = Path(Config.parse_obj(get_driver().config.dict()).cos_path)
 CD = Config.parse_obj(get_driver().config.dict()).cos_cd
+DELAY = Config.parse_obj(get_driver().config.dict()).cos_delay
+IS_FORWARD = Config.parse_obj(get_driver().config.dict()).cos_forward_msg
 
 
 def check_cd(user_id: int, user_data: Dict[str, datetime]) -> Tuple[bool, int, dict]:
@@ -57,8 +62,13 @@ async def download_from_urls(urls: List[str], path: Path):
     :param path: 保存路径
     :return: None
     '''
-    if not path.parent.exists():
-        path.parent.mkdir(parents=True)
+    is_download_error = False
+    error_cnt = 0
+    success_cnt = 0
+    if not path.exists():
+        path.mkdir(parents=True)
+    if not path.is_dir():
+        raise WriteError('路径不是文件夹')
     async with httpx.AsyncClient() as client:
         for url in urls:
             try:
@@ -68,8 +78,14 @@ async def download_from_urls(urls: List[str], path: Path):
                 content = rsp.content
                 with open(new_path, 'wb') as f:
                     f.write(content)
-            except (IndexError, IOError, httpx.ConnectError, httpx.RequestError, httpx.ReadTimeout, TimeoutException):
-                raise WriteError('下载失败')
+            except (httpx.ConnectError, httpx.RequestError, httpx.ReadTimeout, TimeoutException):
+                is_download_error = True
+                error_cnt += 1
+                continue
+            if is_download_error:
+                raise WriteError(f'有{error_cnt}张图片由于超时下载失败了')
+            success_cnt += 1
+            logger.success(f'下载{success_cnt}张成功')
 
 
 async def send_forward_msg(
@@ -115,4 +131,20 @@ def msglist2forward(name: str, uin: str, msgs: list) -> list:
     def to_json(msg: Message):
         return {"type": "node", "data": {"name": name, "uin": uin, "content": msg}}
 
-    return [to_json(msg) for msg in msgs]        
+    return [to_json(msg) for msg in msgs]   
+
+async def send_regular_msg(matcher: Matcher,messages:list):
+    '''
+    发送常规消息
+    :param matcher: Matcher
+    :param messages: 消息列表
+    '''
+    cnt = 1
+    for msg in messages:
+        try:
+            cnt += 1
+            await matcher.send(msg)
+            await sleep(DELAY)
+        except ActionFailed:
+            if cnt <= 2:
+                await matcher.send('消息可能风控,请尝试更改为合并转发模式')

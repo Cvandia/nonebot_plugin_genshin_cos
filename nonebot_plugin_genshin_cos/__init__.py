@@ -63,6 +63,7 @@ logger.opt(colors=True).info(logo)
 user_data = {}
 CONFIG: Dict[str, Dict[str,str]] = {'原神':{},'崩坏3':{},'大别野':{},'星穹铁道':{}}
 DRIVER = get_driver()
+
 # 读取配置文件
 config_path = Path("config/genshincos.json")
 config_path.parent.mkdir(parents=True, exist_ok=True)
@@ -210,7 +211,7 @@ async def _(bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = Comm
     await send_images(bot,matcher,args,event,send_type)
 
 
-@download_cos.got('game_type', prompt='你想下载哪种类型的,有原神和大别野,崩坏3')
+@download_cos.got('game_type', prompt='你想下载哪种类型的,有原神和大别野,崩坏3,星穹铁道')
 async def got_type(game_type: str = ArgPlainText()):
     if game_type in GENSHIN_NAME:
         hot = genshin_hot
@@ -229,7 +230,7 @@ async def got_type(game_type: str = ArgPlainText()):
             await download_from_urls(image_urls, SAVE_PATH / f'{game_type}cos')
             await download_cos.finish(f'已成功保存{len(image_urls)}张{game_type}的cos图片')
         except WriteError as e:
-            await download_cos.finish(f'保存{game_type}的cos图片失败,原因:{e}')
+            await download_cos.finish(f'保存部分{game_type}的cos图片失败,原因:{e}')
 
 ###########################################################################################
 
@@ -300,7 +301,10 @@ async def send_images(bot:Bot, matcher: Matcher, args: list, event: MessageEvent
                 await matcher.finish(f"最多只能获取{len(image_list)}张图片", at_sender=True)
             for i in range(num):
                 msg_list.append(MessageSegment.image(image_list[i]))
-            await send_forward_msg(bot, event, "米游社cos", bot.self_id, msg_list)
+            if IS_FORWARD:
+                await send_forward_msg(bot, event, "米游社cos", bot.self_id, msg_list)
+            else:
+                await send_regular_msg(matcher, msg_list)
     else:
         await matcher.finish(f"cd冷却中,还剩{deletime}秒", at_sender=True)
 
