@@ -1,4 +1,4 @@
-
+![056131D4](https://github.com/Cvandia/nonebot_plugin_genshin_cos/assets/106718176/da116fce-d24f-4f89-8f6c-1f2509fd56be)
 <div align="center">
 
 <a href="https://v2.nonebot.dev/store"><img src="https://ghproxy.com/https://github.com/Cvandia/nonebot_plugin_genshin_cos/blob/main/res/ico.png" width="180" height="180" alt="NoneBotPluginLogo"></a>
@@ -24,9 +24,11 @@ _⭐基于Nonebot2的一款获取米游社cos的插件⭐_
 受到[教程](https://juejin.cn/post/6990320268010848286)的启发，所以写了这个插件，更多功能后续更新~~我很懒，学业重~~
 
 
+
 <div align="center">
 
 ### 或者你有啥关于该插件的新想法的，可以提issue或者pr (>A<)
+### 不仅有原神，现在支持崩坏3、星穹铁道、大别野的cos图！
 
 </div>
 
