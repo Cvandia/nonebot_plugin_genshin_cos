@@ -193,7 +193,7 @@ async def _(event: GroupMessageEvent, args: Tuple[str, ...] = RegexGroup()):
 
 @hot_cos.handle()
 async def _(
-    bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()
+        bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()
 ):
     if not arg:
         await hot_cos.finish("请指定cos类型")
@@ -213,10 +213,10 @@ async def _(
 
 @rank_cos.handle()
 async def _(
-    bot: Bot,
-    matcher: Matcher,
-    event: MessageEvent,
-    group: Tuple[str, ...] = RegexGroup(),
+        bot: Bot,
+        matcher: Matcher,
+        event: MessageEvent,
+        group: Tuple[str, ...] = RegexGroup(),
 ):
     if not group[1]:
         await rank_cos.finish("请指定cos类型")
@@ -243,7 +243,7 @@ async def _(
 
 @latest_cos.handle()
 async def _(
-    bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()
+        bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()
 ):
     if not arg:
         await latest_cos.finish("请指定cos类型")
@@ -263,7 +263,7 @@ async def _(
 
 @good_cos.handle()
 async def _(
-    bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()
+        bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()
 ):
     if not arg:
         await good_cos.finish("请指定cos类型")
@@ -315,8 +315,8 @@ async def aps_send(aps_goup_id: str):
             continue
         for saved_group_id, time in dict.items():
             if not (
-                datetime.now().hour == int(time.split(":")[0])
-                and datetime.now().minute == int(time.split(":")[1])
+                    datetime.now().hour == int(time.split(":")[0])
+                    and datetime.now().minute == int(time.split(":")[1])
             ):
                 continue
             elif saved_group_id != aps_goup_id:
@@ -351,11 +351,11 @@ async def aps_send(aps_goup_id: str):
 
 
 async def send_images(
-    bot: Bot,
-    matcher: Matcher,
-    args: list,
-    event: MessageEvent,
-    send_type: HoyoBasicSpider,
+        bot: Bot,
+        matcher: Matcher,
+        args: list,
+        event: MessageEvent,
+        send_type: HoyoBasicSpider,
 ):
     """
     发送图片

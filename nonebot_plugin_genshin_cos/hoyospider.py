@@ -1,7 +1,9 @@
 from enum import Enum, unique
 from typing import Dict, List
+
 import httpx
 from httpx import Response
+
 
 ##########################################################################################
 
@@ -37,7 +39,7 @@ class HoyoBasicSpider:
         :return: urls
         """
         pass
-    
+
     def sync_get_name(self, page_size: int) -> str:
         """同步获取names
         :param page_size: 每页数量
@@ -54,7 +56,7 @@ class HoyoBasicSpider:
 
         response = httpx.get(self.api, params=params, headers=self.headers)
         return self.handle_response(response, is_good)
-    
+
     def sync_name(self, params: dict = None, is_good: bool = False):
         """同步获取
         :param params: 参数
@@ -101,7 +103,7 @@ class HoyoBasicSpider:
         async with httpx.AsyncClient() as client:
             response = await client.get(self.api, params=params, headers=self.headers)
         return self.get_rsp_name(response, is_good)
-    
+
     def handle_response(self, response: Response, is_good: bool = False) -> List:
         """处理响应
         :param response: 响应
@@ -132,6 +134,7 @@ class HoyoBasicSpider:
         for post in posts:
             names.append(post['post']['subject'])
         return names
+
 
 @unique
 class RankType(Enum):
@@ -175,7 +178,7 @@ class ForumType(Enum):
     DBYCOS = 47  # 大别野cos
     DBYPIC = 39  # 大别野同人图
     StarRailPic = 56  # 星穹铁道同人图
-    StarRailCos = 62 # 星穹铁道cos
+    StarRailCos = 62  # 星穹铁道cos
     Honkai2Pic = 40  # 崩坏2同人图
     TearsOfThemisPic = 38  # 泪水同人图
 
@@ -232,10 +235,11 @@ class Rank(HoyoBasicSpider):
     async def async_get_name(self, page_size: int = 21) -> List:
         params = self.get_params(page_size)
         return await self.async_name(params)
-    
+
     def sync_get_name(self, page_size: int = 21) -> List:
         params = self.get_params(page_size)
         return self.sync_name(params)
+
 
 class Hot(HoyoBasicSpider):
     '''
@@ -267,11 +271,11 @@ class Hot(HoyoBasicSpider):
     async def async_get_urls(self, page_size: int = 20) -> List:
         params = self.get_params(page_size)
         return await self.async_get(params)
-    
+
     def sync_get_name(self, page_size: int = 20) -> List:
         params = self.get_params(page_size)
         return self.sync_name(params)
-    
+
     async def async_get_name(self, page_size: int = 20) -> List:
         params = self.get_params(page_size)
         return await self.async_name(params)
@@ -306,11 +310,11 @@ class Good(HoyoBasicSpider):
     async def async_get_urls(self, page_size: int = 20) -> List:
         params = self.get_params(page_size)
         return await self.async_get(params, is_good=True)
-    
+
     def sync_get_name(self, page_size: int = 20) -> List:
         params = self.get_params(page_size)
         return self.sync_name(params, is_good=True)
-    
+
     async def async_get_name(self, page_size: int = 20) -> List:
         params = self.get_params(page_size)
         return await self.async_name(params, is_good=True)
@@ -346,17 +350,17 @@ class Latest(HoyoBasicSpider):
     async def async_get_urls(self, page_size: int = 20) -> List:
         params = self.get_params(page_size)
         return await self.async_get(params)
-    
+
     def sync_get_name(self, page_size: int = 20) -> List:
         params = self.get_params(page_size)
         return self.sync_name(params)
-    
+
     async def async_get_name(self, page_size: int = 20) -> List:
         params = self.get_params(page_size)
         return await self.async_name(params)
-    
 
-#实例化对象
+
+# 实例化对象
 
 genshin_rank_daily = Rank(ForumType.GenshinCos, RankType.Daily)
 genshin_hot = Hot(ForumType.GenshinCos)
