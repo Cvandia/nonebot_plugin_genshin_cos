@@ -1,24 +1,29 @@
-from pathlib import Path
-from nonebot import get_driver
-from .config import Config
-from typing import Dict, List, Tuple
-from datetime import datetime, timedelta
-from httpx import TimeoutException
-import httpx
-from nonebot.adapters.onebot.v11 import Bot, MessageEvent, GroupMessageEvent, Message, GROUP_ADMIN, GROUP_OWNER
-from nonebot.permission import SUPERUSER
-from nonebot.matcher import Matcher
-from nonebot.log import logger
-from nonebot.exception import ActionFailed
 from asyncio import sleep
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Dict, List, Tuple
+
+import httpx
+from httpx import TimeoutException
+from nonebot import get_driver
+from nonebot.adapters.onebot.v11 import Bot, MessageEvent, GroupMessageEvent, Message, GROUP_ADMIN, GROUP_OWNER
+from nonebot.exception import ActionFailed
+from nonebot.log import logger
+from nonebot.matcher import Matcher
+from nonebot.permission import SUPERUSER
+
+from .config import Config
+
 #######################################################
 
 # 拓展的异常类和函数
 SUPER_PERMISSION = GROUP_ADMIN | GROUP_OWNER | SUPERUSER
-GENSHIN_NAME = ["原神",'OP','op','欧泡','⭕','🅾️','🅾️P','🅾️p','原','圆']
-HONKAI3RD_NAME = ['崩坏3', '崩崩崩', '蹦蹦蹦','崩坏三','崩三','崩崩崩三','崩坏3rd','崩坏3Rd','崩坏3RD','崩坏3rd','崩坏3RD','崩坏3Rd']
-DBY_NAME = ['大别野','DBY','dby']
-STAR_RAIL = ['星穹铁道','星穹','崩铁','铁道','星铁','穹p','穹铁']
+GENSHIN_NAME = ["原神", 'OP', 'op', '欧泡', '⭕', '🅾️', '🅾️P', '🅾️p', '原', '圆']
+HONKAI3RD_NAME = ['崩坏3', '崩崩崩', '蹦蹦蹦', '崩坏三', '崩三', '崩崩崩三', '崩坏3rd', '崩坏3Rd', '崩坏3RD', '崩坏3rd',
+                  '崩坏3RD', '崩坏3Rd']
+DBY_NAME = ['大别野', 'DBY', 'dby']
+STAR_RAIL = ['星穹铁道', '星穹', '崩铁', '铁道', '星铁', '穹p', '穹铁']
+
 
 class WriteError(Exception):
     """写入错误"""
@@ -89,11 +94,11 @@ async def download_from_urls(urls: List[str], path: Path):
 
 
 async def send_forward_msg(
-    bot: Bot,
-    event: MessageEvent,
-    name: str,
-    uin: str,
-    msgs: list,
+        bot: Bot,
+        event: MessageEvent,
+        name: str,
+        uin: str,
+        msgs: list,
 ) -> dict:
     """调用合并转发API
 
@@ -104,6 +109,7 @@ async def send_forward_msg(
         uin: 发送者账号,
         msgs: 消息列表,
     """
+
     def to_json(msg: Message):
         return {"type": "node", "data": {"name": name, "uin": uin, "content": msg}}
 
@@ -128,12 +134,14 @@ def msglist2forward(name: str, uin: str, msgs: list) -> list:
         uin: 发送者账号
         msgs: 消息列表
     """
+
     def to_json(msg: Message):
         return {"type": "node", "data": {"name": name, "uin": uin, "content": msg}}
 
-    return [to_json(msg) for msg in msgs]   
+    return [to_json(msg) for msg in msgs]
 
-async def send_regular_msg(matcher: Matcher,messages:list):
+
+async def send_regular_msg(matcher: Matcher, messages: list):
     '''
     发送常规消息
     :param matcher: Matcher
