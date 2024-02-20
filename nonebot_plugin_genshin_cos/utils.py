@@ -18,7 +18,7 @@ from .config import Config
 
 # 拓展的异常类和函数
 SUPER_PERMISSION = GROUP_ADMIN | GROUP_OWNER | SUPERUSER
-GENSHIN_NAME = ["原神", 'OP', 'op', '欧泡', '⭕', '🅾️', '🅾️P', '🅾️p', '原', '圆']
+GENSHIN_NAME = ["原神", 'OP', 'op', '欧泡', '⭕', '🅾️', '🅾️P', '🅾️p', '原', '圆', '原']
 HONKAI3RD_NAME = ['崩坏3', '崩崩崩', '蹦蹦蹦', '崩坏三', '崩三', '崩崩崩三', '崩坏3rd', '崩坏3Rd', '崩坏3RD', '崩坏3rd',
                   '崩坏3RD', '崩坏3Rd']
 DBY_NAME = ['大别野', 'DBY', 'dby']

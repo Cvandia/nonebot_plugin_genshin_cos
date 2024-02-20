@@ -3,18 +3,13 @@ from typing import Annotated
 
 from nonebot import get_bot
 from nonebot.adapters.onebot.v11 import MessageSegment
-from nonebot.params import RegexGroup, ArgPlainText, CommandArg, CommandStart
+from nonebot.params import RegexGroup, ArgPlainText, CommandArg
 from nonebot.plugin import on_regex, on_command, require, PluginMetadata
 from nonebot.rule import to_me
 
 from .config import Config
 from .hoyospider import *
 from .utils import *
-
-require("nonebot_plugin_templates")
-from nonebot_plugin_templates.template_types import *
-from nonebot_plugin_templates.templates_render import menu_render
-
 try:
     scheduler = require("nonebot_plugin_apscheduler").scheduler
 except:
@@ -39,7 +34,7 @@ __plugin_meta__ = PluginMetadata(
         "unique_name": "genshin_cos",
         "example": "保存cos:保存cos图片至本地文件",
         "author": "divandia <106718176+Cvandia@users.noreply.github.com>",
-        "version": "0.2.0",
+        "version": "0.2.4",
     },
 )
 logo = """<g>
@@ -71,7 +66,6 @@ else:
         json.dump(CONFIG, f, ensure_ascii=False, indent=4)
 
 # 事件响应器
-help = on_command("原神cos", aliases={"genshincos"})
 download_cos = on_command(
     "下载cos",
     aliases={"cos保存", "保存cos"},
@@ -93,42 +87,6 @@ turn_aps = on_regex(
 show_aps = on_command(
     "查看本群推送", aliases={"查看推送", "查看订阅"}, block=False, priority=5, rule=to_me()
 )
-
-Generated_pic = False
-Help_Path = Path(__file__).parent / "Help.jpeg"
-
-
-@help.handle()
-async def _(matcher: Matcher, event: MessageEvent, foo: Annotated[str, CommandStart()]):
-    global Generated_pic
-    command_start = str(foo)
-    if not Generated_pic:
-        menu = Menu(
-            "原神cos",
-            des="获取原神cos图片",
-            funcs=Funcs(
-                Func(f"{command_start}日、周、月榜cos", "获取排行榜cos图。如日榜cos 原神 x3")
-                + Func(f"{command_start}热门cos", "获取指定游戏热门cos图，如热门cos 原神 x3	")
-                + Func(f"{command_start}最新cos", "获取指定游戏最新cos图，如最新cos 原神 x3	")
-                + Func(f"{command_start}精品cos", "获取指定游戏精品cos图，如精品cos 原神 x3	")
-                + Func(f"{command_start}查看本群推送", "查看本群的订阅cos目录")
-                + Func(
-                    f"{command_start}下载cos", "仅超管、群主、管理员可用\n获取指定游戏热门cos图，如热门cos 原神 x3	"
-                )
-                + Func(
-                    f"{command_start}开启每日推送xx (时间)",
-                    "仅超管、群主、管理员可用\n如开启每日推送原神 8:30,注意时间的格式",
-                )
-            ),
-        )
-        pic_bytes = await menu_render(Menus(menu), 700)
-        with open(Help_Path, "wb") as f:
-            f.write(pic_bytes)
-        Generated_pic = True
-    else:
-        with open(Help_Path, "rb") as f:
-            pic_bytes = f.read()
-    await matcher.send(MessageSegment.image(pic_bytes))
 
 
 @show_aps.handle()
