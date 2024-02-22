@@ -1,8 +1,6 @@
 from random import choice
-from typing import Annotated
-
 from nonebot import get_bot
-from nonebot.adapters.onebot.v11 import MessageSegment
+from nonebot.adapters.onebot.v11 import MessageSegment, GroupMessageEvent, MessageEvent
 from nonebot.params import RegexGroup, ArgPlainText, CommandArg
 from nonebot.plugin import on_regex, on_command, require, PluginMetadata
 from nonebot.rule import to_me
@@ -10,6 +8,7 @@ from nonebot.rule import to_me
 from .config import Config
 from .hoyospider import *
 from .utils import *
+
 try:
     scheduler = require("nonebot_plugin_apscheduler").scheduler
 except:
@@ -52,7 +51,12 @@ logger.opt(colors=True).info(logo)
 
 # 用户cd数据
 user_data = {}
-CONFIG: Dict[str, Dict[str, str]] = {"原神": {}, "崩坏3": {}, "大别野": {}, "星穹铁道": {}}
+CONFIG: Dict[str, Dict[str, str]] = {
+    "原神": {},
+    "崩坏3": {},
+    "大别野": {},
+    "星穹铁道": {},
+}
 DRIVER = get_driver()
 
 # 读取配置文件
@@ -73,10 +77,21 @@ download_cos = on_command(
     priority=5,
     permission=SUPER_PERMISSION,
 )
-hot_cos = on_command("热门cos", aliases={"热门coser", "热门cos图"}, block=False, priority=5)
-rank_cos = on_regex(r"^(日|月|周)榜cos[r]?[图]?(.+)?", priority=5, block=False, flags=re.I)
-latest_cos = on_command("最新cos", aliases={"最新coser", "最新cos图"}, block=False, priority=5)
-good_cos = on_command("精品cos", aliases={"精品coser", "精品cos图"}, block=False, priority=5)
+hot_cos = on_command(
+    "热门cos", aliases={"热门coser", "热门cos图"}, block=False, priority=5
+)
+rank_cos = on_regex(
+    r"^(日|月|周)榜cos[r]?[图]?(.+)?", priority=5, block=False, flags=re.I
+)
+latest_cos = on_command(
+    "最新cos", aliases={"最新coser", "最新cos图"}, block=False, priority=5
+)
+good_cos = on_command(
+    "精品cos", aliases={"精品coser", "精品cos图"}, block=False, priority=5
+)
+search_cos = on_regex(
+    r"^搜索(原神|崩坏3|星穹铁道|大别野)cos[r]?[图]?(.+)?", block=False, priority=5
+)
 turn_aps = on_regex(
     r"^(开启|关闭)每日推送(原神|崩坏3|星穹铁道|大别野)(\s)?(.+)?",
     block=False,
@@ -85,8 +100,36 @@ turn_aps = on_regex(
     permission=SUPER_PERMISSION,
 )
 show_aps = on_command(
-    "查看本群推送", aliases={"查看推送", "查看订阅"}, block=False, priority=5, rule=to_me()
+    "查看本群推送",
+    aliases={"查看推送", "查看订阅"},
+    block=False,
+    priority=5,
+    rule=to_me(),
 )
+
+
+@search_cos.handle()
+async def _(
+    bot: Bot,
+    matcher: Matcher,
+    event: MessageEvent,
+    args: Tuple[str, ...] = RegexGroup(),
+):
+    if not args[1]:
+        await search_cos.finish("请指定搜索内容")
+    else:
+        groups = args[1].split()
+    if args[0] == "原神":
+        search_class = Search(ForumType.GenshinCos, groups[0])
+    elif args[0] == "崩坏3":
+        search_class = Search(ForumType.Honkai3rdPic, groups[0])
+    elif args[0] == "大别野":
+        search_class = Search(ForumType.DBYCOS, groups[0])
+    elif args[0] == "星穹铁道":
+        search_class = Search(ForumType.StarRailCos, groups[0])
+    else:
+        await search_cos.finish("暂不支持该类型")
+    await send_images(bot, matcher, groups, event, search_class)
 
 
 @show_aps.handle()
@@ -151,7 +194,7 @@ async def _(event: GroupMessageEvent, args: Tuple[str, ...] = RegexGroup()):
 
 @hot_cos.handle()
 async def _(
-        bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()
+    bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()
 ):
     if not arg:
         await hot_cos.finish("请指定cos类型")
@@ -171,10 +214,10 @@ async def _(
 
 @rank_cos.handle()
 async def _(
-        bot: Bot,
-        matcher: Matcher,
-        event: MessageEvent,
-        group: Tuple[str, ...] = RegexGroup(),
+    bot: Bot,
+    matcher: Matcher,
+    event: MessageEvent,
+    group: Tuple[str, ...] = RegexGroup(),
 ):
     if not group[1]:
         await rank_cos.finish("请指定cos类型")
@@ -201,7 +244,7 @@ async def _(
 
 @latest_cos.handle()
 async def _(
-        bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()
+    bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()
 ):
     if not arg:
         await latest_cos.finish("请指定cos类型")
@@ -221,7 +264,7 @@ async def _(
 
 @good_cos.handle()
 async def _(
-        bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()
+    bot: Bot, matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()
 ):
     if not arg:
         await good_cos.finish("请指定cos类型")
@@ -239,7 +282,9 @@ async def _(
     await send_images(bot, matcher, args, event, send_type)
 
 
-@download_cos.got("game_type", prompt="你想下载哪种类型的,有原神和大别野,崩坏3,星穹铁道")
+@download_cos.got(
+    "game_type", prompt="你想下载哪种类型的,有原神和大别野,崩坏3,星穹铁道"
+)
 async def got_type(game_type: str = ArgPlainText()):
     if game_type in GENSHIN_NAME:
         hot = genshin_hot
@@ -256,7 +301,9 @@ async def got_type(game_type: str = ArgPlainText()):
         await download_cos.send(f"正在下载{game_type}的cos图片")
         try:
             await download_from_urls(image_urls, SAVE_PATH / f"{game_type}cos")
-            await download_cos.finish(f"已成功保存{len(image_urls)}张{game_type}的cos图片")
+            await download_cos.finish(
+                f"已成功保存{len(image_urls)}张{game_type}的cos图片"
+            )
         except WriteError as e:
             await download_cos.finish(f"保存部分{game_type}的cos图片失败,原因:{e}")
 
@@ -273,8 +320,8 @@ async def aps_send(aps_goup_id: str):
             continue
         for saved_group_id, time in dict.items():
             if not (
-                    datetime.now().hour == int(time.split(":")[0])
-                    and datetime.now().minute == int(time.split(":")[1])
+                datetime.now().hour == int(time.split(":")[0])
+                and datetime.now().minute == int(time.split(":")[1])
             ):
                 continue
             elif saved_group_id != aps_goup_id:
@@ -296,9 +343,10 @@ async def aps_send(aps_goup_id: str):
                 rank_text = "\n".join(
                     [f"{i + 1}.{name_list[i]}" for i in range(len(name_list))]
                 )
-                msg_list = [f"✅米游社{game_type}cos每日榜单✅"]
-                msg_list.append(rank_text)
-                msg_list.append([MessageSegment.image(img) for img in image_list])
+                msg_list = [MessageSegment.text(f"✅米游社{game_type}cos每日榜单✅")]
+                msg_list.append(MessageSegment.text(rank_text))
+                for img in image_list:
+                    msg_list.append(MessageSegment.image(img))
                 msg_list = msglist2forward("米游社cos", "2854196306", msg_list)
                 await bot.call_api(
                     "send_group_forward_msg", group_id=group_id, messages=msg_list
@@ -309,11 +357,11 @@ async def aps_send(aps_goup_id: str):
 
 
 async def send_images(
-        bot: Bot,
-        matcher: Matcher,
-        args: list,
-        event: MessageEvent,
-        send_type: HoyoBasicSpider,
+    bot: Bot,
+    matcher: Matcher,
+    args: list,
+    event: MessageEvent,
+    send_type: HoyoBasicSpider,
 ):
     """
     发送图片
@@ -338,10 +386,13 @@ async def send_images(
         else:
             num = int(re.sub(r"[x|*|X]", "", args[1]))
             num = num if num <= MAX else MAX
-            msg_list = [f"✅找到最新的一些{args[0]}图如下:✅"]
+            await matcher.send(f"获取{num}张图片中…请稍等")
+            msg_list = [MessageSegment.text(f"✅找到最新的一些{args[0]}图如下:✅")]
             image_list = await send_type.async_get_urls()
             if num > len(image_list):
-                await matcher.finish(f"最多只能获取{len(image_list)}张图片", at_sender=True)
+                await matcher.finish(
+                    f"最多只能获取{len(image_list)}张图片", at_sender=True
+                )
             for i in range(num):
                 msg_list.append(MessageSegment.image(image_list[i]))
             if IS_FORWARD:
@@ -366,14 +417,18 @@ async def start_aps():
                 if time == "":
                     continue
                 try:
-                    scheduler.add_job(
-                        aps_send,
-                        trigger="cron",
-                        hour=time.split(":")[0],
-                        minute=time.split(":")[1],
-                        id=f"{game_type}{aps_group_id}",
-                        args=(aps_group_id,),
-                    )
+                    if scheduler:
+                        scheduler.add_job(
+                            aps_send,
+                            trigger="cron",
+                            hour=time.split(":")[0],
+                            minute=time.split(":")[1],
+                            id=f"{game_type}{aps_group_id}",
+                            args=(aps_group_id,),
+                        )
+                    else:
+                        logger.error("未安装apscheduler插件,无法使用此功能")
+                        return
                     logger.debug(f"已成功添加{aps_group_id}的{game_type}定时推送")
                 except Exception as e:
                     logger.error(e)

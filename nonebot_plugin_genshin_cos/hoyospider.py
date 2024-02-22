@@ -359,6 +359,45 @@ class Latest(HoyoBasicSpider):
     async def async_get_name(self, page_size: int = 20) -> List:
         params = self.get_params(page_size)
         return await self.async_name(params)
+    
+
+class Search(HoyoBasicSpider):
+    '''
+    搜索帖子
+    url: https://bbs.mihoyo.com/ys/searchPost?keyword=原神
+    '''
+    def __init__(self, forum_id: ForumType, keyword: str) -> None:
+        super().__init__()
+        self.api = self.base_url + "searchPosts"
+        gametype = get_gids(forum_id.name)
+        self.gids = gametype.value
+        self.game_name = gametype.name
+        self.keyword = keyword + "+cos"
+
+    def get_params(self, page_size: int) -> Dict:
+        params = {
+            "gids": self.gids,
+            "size": page_size,
+            "keyword": self.keyword
+        }
+        return params
+    
+    def sync_get_urls(self, page_size: int = 20) -> List:
+        params = self.get_params(page_size)
+        return self.sync_get(params, is_good=True)
+    
+    async def async_get_urls(self, page_size: int = 20) -> List:
+        params = self.get_params(page_size)
+        return await self.async_get(params, is_good=True)
+    
+    def sync_get_name(self, page_size: int = 20) -> List:
+        params = self.get_params(page_size)
+        return self.sync_name(params, is_good=True)
+    
+    async def async_get_name(self, page_size: int = 20) -> List:
+        params = self.get_params(page_size)
+        return await self.async_name(params, is_good=True)
+
 
 
 # 实例化对象
