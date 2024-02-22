@@ -33,7 +33,7 @@ __plugin_meta__ = PluginMetadata(
         "unique_name": "genshin_cos",
         "example": "保存cos:保存cos图片至本地文件",
         "author": "divandia <106718176+Cvandia@users.noreply.github.com>",
-        "version": "0.2.4",
+        "version": "0.2.5",
     },
 )
 logo = """<g>
