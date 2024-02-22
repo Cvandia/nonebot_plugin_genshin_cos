@@ -21,14 +21,13 @@ _⭐基于Nonebot2的一款获取米游社cos的插件⭐_
 
 ## ⭐ 介绍
 
-受到[教程](https://juejin.cn/post/6990320268010848286)的启发，所以写了这个插件，更多功能后续更新~~我很懒，学业重~~
-
+受到[教程](https://juejin.cn/post/6990320268010848286)的启发，根据原文基础上修改编写出本插件，**若你不是Nonebot用户，并且想使用米游社cos相关内容，请参考[以下内容](https://github.com/Cvandia/nonebot_plugin_genshin_cos/blob/main/nonebot_plugin_genshin_cos/hoyospider.py)**
 
 
 <div align="center">
 
-### 或者你有啥关于该插件的新想法的，可以提issue或者pr (>A<)
-### 不仅有原神，现在支持崩坏3、星穹铁道、大别野的cos图！
+
+### 目前不仅有原神，现在支持崩坏3、星穹铁道、大别野的cos图！
 
 </div>
 
