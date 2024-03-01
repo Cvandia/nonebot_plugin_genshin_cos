@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-plugin-genshin-cos"
-version = "0.2.5"
+version = "0.2.6"
 description = "米游社原神cos图获取"
 authors = ["Cvandia <106718176+Cvandia@users.noreply.github.com>"]
 license = "MIT"

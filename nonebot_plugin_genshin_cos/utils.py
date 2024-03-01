@@ -6,13 +6,13 @@ from typing import Dict, List, Tuple
 import httpx
 from httpx import TimeoutException
 from nonebot import get_driver
-from nonebot.adapters.onebot.v11 import Bot, MessageEvent, GroupMessageEvent, Message, GROUP_ADMIN, GROUP_OWNER
+from nonebot.adapters.onebot.v11 import Bot, MessageEvent, GroupMessageEvent, MessageSegment, Message, GROUP_ADMIN, GROUP_OWNER
 from nonebot.exception import ActionFailed
 from nonebot.log import logger
 from nonebot.matcher import Matcher
 from nonebot.permission import SUPERUSER
 
-from .config import Config
+from .config import config
 
 #######################################################
 
@@ -32,11 +32,12 @@ class WriteError(Exception):
 
 # 加载配置
 
-MAX = Config.parse_obj(get_driver().config.dict()).cos_max
-SAVE_PATH = Path(Config.parse_obj(get_driver().config.dict()).cos_path)
-CD = Config.parse_obj(get_driver().config.dict()).cos_cd
-DELAY = Config.parse_obj(get_driver().config.dict()).cos_delay
-IS_FORWARD = Config.parse_obj(get_driver().config.dict()).cos_forward_msg
+MAX = config.cos_max
+SAVE_PATH = Path(config.cos_path)
+CD = config.cos_cd
+DELAY = config.cos_delay
+IS_FORWARD = config.cos_forward_msg
+IS_LAGRANGE = config.is_lagrange
 
 
 def check_cd(user_id: int, user_data: Dict[str, datetime]) -> Tuple[bool, int, dict]:
@@ -114,15 +115,21 @@ async def send_forward_msg(
         return {"type": "node", "data": {"name": name, "uin": uin, "content": msg}}
 
     messages = [to_json(msg) for msg in msgs]
-
-    if isinstance(event, GroupMessageEvent):
-        return await bot.call_api(
-            "send_group_forward_msg", group_id=event.group_id, messages=messages
-        )
+    if IS_LAGRANGE:
+        res_id = await bot.call_api("send_forward_msg", messages=messages)
+        if isinstance(event, GroupMessageEvent):
+            return await bot.send_group_msg(group_id=event.group_id, message=MessageSegment.forward(res_id))
+        else:
+            return await bot.send_private_msg(user_id=event.user_id, message=MessageSegment.forward(res_id))
     else:
-        return await bot.call_api(
-            "send_private_forward_msg", user_id=event.user_id, messages=messages
-        )
+        if isinstance(event, GroupMessageEvent):
+            return await bot.call_api(
+                "send_group_forward_msg", group_id=event.group_id, messages=messages
+            )
+        else:
+            return await bot.call_api(
+                "send_private_forward_msg", user_id=event.user_id, messages=messages
+            )
 
 
 def msglist2forward(name: str, uin: str, msgs: list) -> list:

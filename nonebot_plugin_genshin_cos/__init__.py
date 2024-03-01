@@ -4,8 +4,6 @@ from nonebot.adapters.onebot.v11 import MessageSegment, GroupMessageEvent, Messa
 from nonebot.params import RegexGroup, ArgPlainText, CommandArg
 from nonebot.plugin import on_regex, on_command, require, PluginMetadata
 from nonebot.rule import to_me
-
-from .config import Config
 from .hoyospider import *
 from .utils import *
 
@@ -24,7 +22,6 @@ import re
 __plugin_meta__ = PluginMetadata(
     name="米游社cos",
     description="获取原神coser图片",
-    config=Config,
     usage="原神cos,CosPlus,下载cos",
     type="application",
     homepage="https://github.com/Cvandia/nonebot_plugin_genshin_cos",
@@ -33,7 +30,7 @@ __plugin_meta__ = PluginMetadata(
         "unique_name": "genshin_cos",
         "example": "保存cos:保存cos图片至本地文件",
         "author": "divandia <106718176+Cvandia@users.noreply.github.com>",
-        "version": "0.2.5",
+        "version": "0.2.6",
     },
 )
 logo = """<g>

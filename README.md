@@ -81,6 +81,7 @@ git clone安装(不推荐)
 |cos_cd|int|30|用户触发cd|
 |cos_forward_msg|bool|True|默认是否合并转发|
 |cos_delay|float|0.5|当上面的配置项为`False`时，发送图片的每张延迟s|
+|is_lagrange|bool|False|由于Lagrange的合并转发不符合OneBotAPI,如果您使用了Lagrange，请在使用前配置此项|
 
 > 注意：绝对路劲中用`/`，用`\`可能会被转义
 
