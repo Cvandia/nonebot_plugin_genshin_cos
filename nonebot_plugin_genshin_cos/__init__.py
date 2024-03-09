@@ -17,6 +17,7 @@ except ModuleNotFoundError:
     import json
 from nonebot_plugin_apscheduler import scheduler
 import asyncio
+import random
 import re
 
 __plugin_meta__ = PluginMetadata(
@@ -30,7 +31,7 @@ __plugin_meta__ = PluginMetadata(
         "unique_name": "genshin_cos",
         "example": "保存cos:保存cos图片至本地文件",
         "author": "divandia <106718176+Cvandia@users.noreply.github.com>",
-        "version": "0.2.6",
+        "version": "0.2.7",
     },
 )
 logo = """<g>
@@ -386,6 +387,8 @@ async def send_images(
             await matcher.send(f"获取{num}张图片中…请稍等")
             msg_list = [MessageSegment.text(f"✅找到最新的一些{args[0]}图如下:✅")]
             image_list = await send_type.async_get_urls()
+            '''random随机从列表中取出num个元素'''
+            image_list = [image_list[i] for i in random.sample(range(len(image_list)), num)]
             if num > len(image_list):
                 await matcher.finish(
                     f"最多只能获取{len(image_list)}张图片", at_sender=True

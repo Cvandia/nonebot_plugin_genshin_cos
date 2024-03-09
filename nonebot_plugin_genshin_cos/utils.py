@@ -115,21 +115,14 @@ async def send_forward_msg(
         return {"type": "node", "data": {"name": name, "uin": uin, "content": msg}}
 
     messages = [to_json(msg) for msg in msgs]
-    if IS_LAGRANGE:
-        res_id = await bot.call_api("send_forward_msg", messages=messages)
-        if isinstance(event, GroupMessageEvent):
-            return await bot.send_group_msg(group_id=event.group_id, message=MessageSegment.forward(res_id))
-        else:
-            return await bot.send_private_msg(user_id=event.user_id, message=MessageSegment.forward(res_id))
+    if isinstance(event, GroupMessageEvent):
+        return await bot.call_api(
+            "send_group_forward_msg", group_id=event.group_id, messages=messages
+        )
     else:
-        if isinstance(event, GroupMessageEvent):
-            return await bot.call_api(
-                "send_group_forward_msg", group_id=event.group_id, messages=messages
-            )
-        else:
-            return await bot.call_api(
-                "send_private_forward_msg", user_id=event.user_id, messages=messages
-            )
+        return await bot.call_api(
+            "send_private_forward_msg", user_id=event.user_id, messages=messages
+        )
 
 
 def msglist2forward(name: str, uin: str, msgs: list) -> list:
