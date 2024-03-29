@@ -37,7 +37,6 @@ SAVE_PATH = Path(config.cos_path)
 CD = config.cos_cd
 DELAY = config.cos_delay
 IS_FORWARD = config.cos_forward_msg
-IS_LAGRANGE = config.is_lagrange
 
 
 def check_cd(user_id: int, user_data: Dict[str, datetime]) -> Tuple[bool, int, dict]:

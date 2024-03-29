@@ -38,12 +38,6 @@ class Config():
             logger.warning("未找到用户自定义配置 cos_delay，使用默认配置")
             self.cos_delay = 0.5
 
-        try:
-            self.is_lagrange = driver_config.is_lagrange
-        except:
-            logger.warning("未找到用户自定义配置 is_lagrange，使用默认配置")
-            self.is_lagrange = False
-
 '''
 实例化配置类
 '''

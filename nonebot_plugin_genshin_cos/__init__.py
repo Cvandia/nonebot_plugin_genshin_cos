@@ -31,7 +31,7 @@ __plugin_meta__ = PluginMetadata(
         "unique_name": "genshin_cos",
         "example": "保存cos:保存cos图片至本地文件",
         "author": "divandia <106718176+Cvandia@users.noreply.github.com>",
-        "version": "0.2.7",
+        "version": "0.2.8",
     },
 )
 logo = """<g>
@@ -329,7 +329,7 @@ async def aps_send(aps_goup_id: str):
                 if game_type in GENSHIN_NAME:
                     send_type = genshin_rank_daily
                 elif game_type in DBY_NAME:
-                    send_type = dby_rank_daily
+                    send_type = dbycos_rank_daily
                 elif game_type in HONKAI3RD_NAME:
                     send_type = honkai3rd_rank_daily
                 elif game_type in STAR_RAIL:
