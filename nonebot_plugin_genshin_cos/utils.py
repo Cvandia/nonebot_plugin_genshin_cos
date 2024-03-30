@@ -6,7 +6,14 @@ from typing import Dict, List, Tuple
 import httpx
 from httpx import TimeoutException
 from nonebot import get_driver
-from nonebot.adapters.onebot.v11 import Bot, MessageEvent, GroupMessageEvent, MessageSegment, Message, GROUP_ADMIN, GROUP_OWNER
+from nonebot.adapters.onebot.v11 import (
+    Bot,
+    MessageEvent,
+    GroupMessageEvent,
+    Message,
+    GROUP_ADMIN,
+    GROUP_OWNER,
+)
 from nonebot.exception import ActionFailed
 from nonebot.log import logger
 from nonebot.matcher import Matcher
@@ -18,15 +25,29 @@ from .config import config
 
 # 拓展的异常类和函数
 SUPER_PERMISSION = GROUP_ADMIN | GROUP_OWNER | SUPERUSER
-GENSHIN_NAME = ["原神", 'OP', 'op', '欧泡', '⭕', '🅾️', '🅾️P', '🅾️p', '原', '圆', '原']
-HONKAI3RD_NAME = ['崩坏3', '崩崩崩', '蹦蹦蹦', '崩坏三', '崩三', '崩崩崩三', '崩坏3rd', '崩坏3Rd', '崩坏3RD', '崩坏3rd',
-                  '崩坏3RD', '崩坏3Rd']
-DBY_NAME = ['大别野', 'DBY', 'dby']
-STAR_RAIL = ['星穹铁道', '星穹', '崩铁', '铁道', '星铁', '穹p', '穹铁']
+GENSHIN_NAME = ["原神", "OP", "op", "欧泡", "⭕", "🅾️", "🅾️P", "🅾️p", "原", "圆", "原"]
+HONKAI3RD_NAME = [
+    "崩坏3",
+    "崩崩崩",
+    "蹦蹦蹦",
+    "崩坏三",
+    "崩三",
+    "崩崩崩三",
+    "崩坏3rd",
+    "崩坏3Rd",
+    "崩坏3RD",
+    "崩坏3rd",
+    "崩坏3RD",
+    "崩坏3Rd",
+]
+DBY_NAME = ["大别野", "DBY", "dby"]
+STAR_RAIL = ["星穹铁道", "星穹", "崩铁", "铁道", "星铁", "穹p", "穹铁"]
+ZZZ_NAME = ["绝区零", "绝零区", "绝零", "0", "零", "绝区", "0区"]
 
 
 class WriteError(Exception):
     """写入错误"""
+
     pass
 
 
@@ -52,7 +73,7 @@ def check_cd(user_id: int, user_data: Dict[str, datetime]) -> Tuple[bool, int, d
     data = user_data
     if str(user_id) not in data:
         data[str(user_id)] = datetime.now()
-    if datetime.now() < data[f'{user_id}']:
+    if datetime.now() < data[f"{user_id}"]:
         delta = (data[str(user_id)] - datetime.now()).seconds
         return False, delta, data
     else:
@@ -61,44 +82,49 @@ def check_cd(user_id: int, user_data: Dict[str, datetime]) -> Tuple[bool, int, d
 
 
 async def download_from_urls(urls: List[str], path: Path):
-    '''
+    """
     下载图片
     :param urls: 图片链接
     :param path: 保存路径
     :return: None
-    '''
+    """
     is_download_error = False
     error_cnt = 0
     success_cnt = 0
     if not path.exists():
         path.mkdir(parents=True)
     if not path.is_dir():
-        raise WriteError('路径不是文件夹')
+        raise WriteError("路径不是文件夹")
     async with httpx.AsyncClient() as client:
         for url in urls:
             try:
-                filename = url.split('/')[-1]
+                filename = url.split("/")[-1]
                 new_path = path / filename
                 rsp = await client.get(url)
                 content = rsp.content
-                with open(new_path, 'wb') as f:
+                with open(new_path, "wb") as f:
                     f.write(content)
-            except (httpx.ConnectError, httpx.RequestError, httpx.ReadTimeout, TimeoutException):
+            except (
+                httpx.ConnectError,
+                httpx.RequestError,
+                httpx.ReadTimeout,
+                TimeoutException,
+            ):
                 is_download_error = True
                 error_cnt += 1
                 continue
             if is_download_error:
-                raise WriteError(f'有{error_cnt}张图片由于超时下载失败了')
+                raise WriteError(f"有{error_cnt}张图片由于超时下载失败了")
             success_cnt += 1
-            logger.success(f'下载{success_cnt}张成功')
+            logger.success(f"下载{success_cnt}张成功")
 
 
 async def send_forward_msg(
-        bot: Bot,
-        event: MessageEvent,
-        name: str,
-        uin: str,
-        msgs: list,
+    bot: Bot,
+    event: MessageEvent,
+    name: str,
+    uin: str,
+    msgs: list,
 ) -> dict:
     """调用合并转发API
 
@@ -141,11 +167,11 @@ def msglist2forward(name: str, uin: str, msgs: list) -> list:
 
 
 async def send_regular_msg(matcher: Matcher, messages: list):
-    '''
+    """
     发送常规消息
     :param matcher: Matcher
     :param messages: 消息列表
-    '''
+    """
     cnt = 1
     for msg in messages:
         try:
@@ -154,4 +180,4 @@ async def send_regular_msg(matcher: Matcher, messages: list):
             await sleep(DELAY)
         except ActionFailed:
             if cnt <= 2:
-                await matcher.send('消息可能风控,请尝试更改为合并转发模式')
+                await matcher.send("消息可能风控,请尝试更改为合并转发模式")

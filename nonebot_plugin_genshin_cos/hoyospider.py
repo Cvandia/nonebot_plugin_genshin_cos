@@ -169,6 +169,7 @@ class GameType(Enum):
     DBY = 5  # 大别野
     StarRail = 6  # 星穹铁道
     Honkai2 = 3  # 崩坏2
+    ZZZ = 8  # 绝区零
 
 
 @unique
@@ -185,7 +186,7 @@ class ForumType(Enum):
     StarRailPic = 56  # 星穹铁道同人图
     StarRailCos = 62  # 星穹铁道cos
     Honkai2Pic = 40  # 崩坏2同人图
-    TearsOfThemisPic = 38  # 泪水同人图
+    ZZZ = 65  # 绝区零
 
 
 def get_gids(forum: str) -> GameType:
@@ -201,6 +202,7 @@ def get_gids(forum: str) -> GameType:
         "StarRailPic": GameType.StarRail,
         "Honkai2Pic": GameType.Honkai2,
         "StarRailCos": GameType.StarRail,
+        "ZZZ": GameType.ZZZ,
     }
     return forum2gids[forum]
 
@@ -359,13 +361,14 @@ class Latest(HoyoBasicSpider):
     async def async_get_name(self, page_size: int = 20) -> List:
         params = self.get_params(page_size)
         return await self.async_name(params)
-    
+
 
 class Search(HoyoBasicSpider):
-    '''
+    """
     搜索帖子
     url: https://bbs.mihoyo.com/ys/searchPost?keyword=原神
-    '''
+    """
+
     def __init__(self, forum_id: ForumType, keyword: str) -> None:
         super().__init__()
         self.api = self.base_url + "searchPosts"
@@ -375,29 +378,24 @@ class Search(HoyoBasicSpider):
         self.keyword = keyword + "+cos"
 
     def get_params(self, page_size: int) -> Dict:
-        params = {
-            "gids": self.gids,
-            "size": page_size,
-            "keyword": self.keyword
-        }
+        params = {"gids": self.gids, "size": page_size, "keyword": self.keyword}
         return params
-    
+
     def sync_get_urls(self, page_size: int = 20) -> List:
         params = self.get_params(page_size)
         return self.sync_get(params, is_good=True)
-    
+
     async def async_get_urls(self, page_size: int = 20) -> List:
         params = self.get_params(page_size)
         return await self.async_get(params, is_good=True)
-    
+
     def sync_get_name(self, page_size: int = 20) -> List:
         params = self.get_params(page_size)
         return self.sync_name(params, is_good=True)
-    
+
     async def async_get_name(self, page_size: int = 20) -> List:
         params = self.get_params(page_size)
         return await self.async_name(params, is_good=True)
-
 
 
 # 实例化对象
@@ -431,3 +429,7 @@ dbycos_rank_daily = Rank(ForumType.DBYCOS, RankType.Daily)
 dbycos_hot = Hot(ForumType.DBYCOS)
 dbycos_good = Good(ForumType.DBYCOS)
 dbycos_latest_comment = Latest(ForumType.DBYCOS, LatestType.LatestComment)
+
+zzz_hot = Hot(ForumType.ZZZ)
+zzz_good = Good(ForumType.ZZZ)
+zzz_latest_comment = Latest(ForumType.ZZZ, LatestType.LatestComment)

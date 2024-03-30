@@ -31,7 +31,7 @@ __plugin_meta__ = PluginMetadata(
         "unique_name": "genshin_cos",
         "example": "保存cos:保存cos图片至本地文件",
         "author": "divandia <106718176+Cvandia@users.noreply.github.com>",
-        "version": "0.2.8",
+        "version": "0.3.0",
     },
 )
 logo = """<g>
@@ -88,7 +88,9 @@ good_cos = on_command(
     "精品cos", aliases={"精品coser", "精品cos图"}, block=False, priority=5
 )
 search_cos = on_regex(
-    r"^搜索(原神|崩坏3|星穹铁道|大别野)cos[r]?[图]?(.+)?", block=False, priority=5
+    r"^搜索(原神|崩坏3|星穹铁道|大别野|绝区零)cos[r]?[图]?(.+)?",
+    block=False,
+    priority=5,
 )
 turn_aps = on_regex(
     r"^(开启|关闭)每日推送(原神|崩坏3|星穹铁道|大别野)(\s)?(.+)?",
@@ -125,6 +127,8 @@ async def _(
         search_class = Search(ForumType.DBYCOS, groups[0])
     elif args[0] == "星穹铁道":
         search_class = Search(ForumType.StarRailCos, groups[0])
+    elif args[0] == "绝区零":
+        search_class = Search(ForumType.ZZZ, groups[0])
     else:
         await search_cos.finish("暂不支持该类型")
     await send_images(bot, matcher, groups, event, search_class)
@@ -149,6 +153,8 @@ async def _(event: GroupMessageEvent, args: Tuple[str, ...] = RegexGroup()):
         await turn_aps.finish("未安装apscheduler插件,无法使用此功能")
     mode = args[0]
     game_type = args[1]
+    if game_type not in GENSHIN_NAME + DBY_NAME:
+        await turn_aps.finish("暂不支持其他类型的订阅，仅支持原神和大别野")
     time = args[3]
     aps_group_id = str(event.group_id)
     MyConfig = CONFIG.copy()
@@ -205,6 +211,8 @@ async def _(
         send_type = dbycos_hot
     elif args[0] in STAR_RAIL:
         send_type = starrail_hot
+    elif args[0] in ZZZ_NAME:
+        send_type = zzz_hot
     else:
         await hot_cos.finish("暂不支持该类型")
     await send_images(bot, matcher, args, event, send_type)
@@ -229,12 +237,8 @@ async def _(
 
     if args[0] in GENSHIN_NAME:
         send_type = Rank(ForumType.GenshinCos, rank_type)
-    elif args[0] in HONKAI3RD_NAME:
-        send_type = Rank(ForumType.Honkai3rdPic, rank_type)
     elif args[0] in DBY_NAME:
         send_type = Rank(ForumType.DBYCOS, rank_type)
-    elif args[0] in STAR_RAIL:
-        send_type = Rank(ForumType.StarRailCos, rank_type)
     else:
         await rank_cos.finish("暂不支持该类型")
     await send_images(bot, matcher, args, event, send_type)
@@ -255,6 +259,8 @@ async def _(
         send_type = dbycos_latest_comment
     elif args[0] in STAR_RAIL:
         send_type = starrail_latest_comment
+    elif args[0] in ZZZ_NAME:
+        send_type = zzz_latest_comment
     else:
         await latest_cos.finish("暂不支持该类型")
     await send_images(bot, matcher, args, event, send_type)
@@ -273,6 +279,8 @@ async def _(
         send_type = honkai3rd_good
     elif args[0] in DBY_NAME:
         send_type = dbycos_good
+    elif args[0] in ZZZ_NAME:
+        send_type = zzz_good
     elif args[0] in STAR_RAIL:
         await good_cos.finish("星穹铁道暂不支持精品cos")
     else:
@@ -292,6 +300,10 @@ async def got_type(game_type: str = ArgPlainText()):
         hot = honkai3rd_hot
     elif game_type in STAR_RAIL:
         hot = starrail_hot
+    elif game_type in ZZZ_NAME:
+        hot = zzz_hot
+    else:
+        await download_cos.finish("暂不支持该类型")
     image_urls = await hot.async_get_urls()
     if not image_urls:
         await download_cos.finish(f"没有找到{game_type}的cos图片")
@@ -330,10 +342,6 @@ async def aps_send(aps_goup_id: str):
                     send_type = genshin_rank_daily
                 elif game_type in DBY_NAME:
                     send_type = dbycos_rank_daily
-                elif game_type in HONKAI3RD_NAME:
-                    send_type = honkai3rd_rank_daily
-                elif game_type in STAR_RAIL:
-                    send_type = starrail_rank_daily
                 else:
                     continue
                 image_list = await send_type.async_get_urls(page_size=5)
@@ -387,8 +395,10 @@ async def send_images(
             await matcher.send(f"获取{num}张图片中…请稍等")
             msg_list = [MessageSegment.text(f"✅找到最新的一些{args[0]}图如下:✅")]
             image_list = await send_type.async_get_urls()
-            '''random随机从列表中取出num个元素'''
-            image_list = [image_list[i] for i in random.sample(range(len(image_list)), num)]
+            """random随机从列表中取出num个元素"""
+            image_list = [
+                image_list[i] for i in random.sample(range(len(image_list)), num)
+            ]
             if num > len(image_list):
                 await matcher.finish(
                     f"最多只能获取{len(image_list)}张图片", at_sender=True
