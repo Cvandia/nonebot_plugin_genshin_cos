@@ -324,7 +324,7 @@ async def got_type(game_type: str = ArgPlainText()):
 # 定时任务
 async def aps_send(aps_goup_id: str):
     logger.debug("正在发送定时推送")
-    bot: Bot = get_bot()
+    bot: Bot = get_bot() #type:ignore
     for game_type, dict in CONFIG.items():
         if game_type == "":
             continue

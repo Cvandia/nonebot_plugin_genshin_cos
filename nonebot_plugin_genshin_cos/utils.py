@@ -5,7 +5,6 @@ from typing import Dict, List, Tuple
 
 import httpx
 from httpx import TimeoutException
-from nonebot import get_driver
 from nonebot.adapters.onebot.v11 import (
     Bot,
     MessageEvent,
