@@ -1,5 +1,5 @@
 from random import choice
-from nonebot import get_bot
+from nonebot import get_bot,get_driver
 from nonebot.adapters.onebot.v11 import MessageSegment, GroupMessageEvent, MessageEvent
 from nonebot.params import RegexGroup, ArgPlainText, CommandArg
 from nonebot.plugin import on_regex, on_command, require, PluginMetadata
