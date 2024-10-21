@@ -1,9 +1,11 @@
 from random import choice
-from nonebot import get_bot,get_driver
-from nonebot.adapters.onebot.v11 import MessageSegment, GroupMessageEvent, MessageEvent
-from nonebot.params import RegexGroup, ArgPlainText, CommandArg
-from nonebot.plugin import on_regex, on_command, require, PluginMetadata
+
+from nonebot import get_bot, get_driver
+from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageEvent, MessageSegment
+from nonebot.params import ArgPlainText, CommandArg, RegexGroup
+from nonebot.plugin import PluginMetadata, on_command, on_regex, require
 from nonebot.rule import to_me
+
 from .hoyospider import *
 from .utils import *
 
@@ -15,10 +17,12 @@ try:
     import ujson as json
 except ModuleNotFoundError:
     import json
-from nonebot_plugin_apscheduler import scheduler
+
 import asyncio
 import random
 import re
+
+from nonebot_plugin_apscheduler import scheduler
 
 __plugin_meta__ = PluginMetadata(
     name="米游社cos",
@@ -324,7 +328,7 @@ async def got_type(game_type: str = ArgPlainText()):
 # 定时任务
 async def aps_send(aps_goup_id: str):
     logger.debug("正在发送定时推送")
-    bot: Bot = get_bot() #type:ignore
+    bot: Bot = get_bot()  # type:ignore
     for game_type, dict in CONFIG.items():
         if game_type == "":
             continue
@@ -419,7 +423,7 @@ async def start_aps():
         if scheduler == None:
             logger.error("未安装apscheduler插件,无法使用此功能")
         with open(config_path, "r", encoding="utf8") as f:
-            CONFIG = json.load(f)
+            CONFIG: Dict[str, Dict[str, str]] = json.load(f)
         for game_type, dict in CONFIG.items():
             if game_type == "":
                 continue

@@ -4,7 +4,6 @@ from typing import Dict, List
 import httpx
 from httpx import Response
 
-
 ##########################################################################################
 
 # 类定义
@@ -379,7 +378,12 @@ class Search(HoyoBasicSpider):
         self.forum_id = forum_id.value
 
     def get_params(self, page_size: int) -> Dict:
-        params = {"gids": self.gids, "size": page_size, "keyword": self.keyword,"forum_id":self.forum_id}
+        params = {
+            "gids": self.gids,
+            "size": page_size,
+            "keyword": self.keyword,
+            "forum_id": self.forum_id,
+        }
         return params
 
     def sync_get_urls(self, page_size: int = 20) -> List:

@@ -5,7 +5,9 @@ from nonebot.log import logger
 Config: 配置类
     - 更新: 解决掉pydantic v2的用户自定义配置类的问题
 """
-class Config():
+
+
+class Config:
     def __init__(self) -> None:
         driver_config = get_driver().config
         try:
@@ -16,7 +18,7 @@ class Config():
 
         try:
             self.cos_path = driver_config.cos_path
-        except :
+        except:
             logger.warning("未找到用户自定义配置 cos_path，使用默认配置")
             self.cos_path = ""
 
@@ -38,7 +40,8 @@ class Config():
             logger.warning("未找到用户自定义配置 cos_delay，使用默认配置")
             self.cos_delay = 0.5
 
-'''
+
+"""
 实例化配置类
-'''
+"""
 config = Config()
